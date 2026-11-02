@@ -73,7 +73,7 @@ export function UploadPanel({ kind }: { kind: UploadKind }) {
   return (
     <Card data-testid={`upload-${kind}`}>
       <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <CardTitle>Upload {def.title.toLowerCase()} (Excel)</CardTitle>
+        <CardTitle>Upload {def.title.charAt(0).toLowerCase() + def.title.slice(1)} (Excel)</CardTitle>
         <a href={`/api/templates/${kind}`} download className={buttonVariants({ variant: "outline", size: "sm" })}>Download template</a>
       </CardHeader>
       <CardContent className="space-y-4">

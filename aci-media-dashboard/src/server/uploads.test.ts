@@ -4,9 +4,9 @@ import { eq } from "drizzle-orm";
 import { createTestDb } from "@/db/test-db";
 import { seedReferenceData } from "@/db/seed";
 import type { Db } from "@/db/types";
-import { campaigns, digitalEntries, historyLog, performanceEntries, spendEntries, tvStations, vendors } from "@/db/schema";
+import { campaigns, competitorMedia, digitalEntries, historyLog, performanceEntries, spendEntries, tvStations, vendors } from "@/db/schema";
 import { TEMPLATES, type UploadKind } from "@/lib/upload/templates";
-import { createBrand, listBusinesses } from "./master-data";
+import { addRival, createBrand, listBusinesses } from "./master-data";
 import { confirmUpload, listUploads, previewUpload, restoreUpload } from "./uploads";
 
 let db: Db;
@@ -177,5 +177,35 @@ describe("digital uploads", () => {
     const bad = await previewUpload(db, { kind: "digital", fileName: "b.xlsx", data: xlsx("digital", [["2026-10", "Savlon Soap", "TV", 1, null, null, null, null, null, null]]) });
     expect(bad.ok).toBe(false);
     expect(bad.errors[0]).toMatchObject({ column: "Platform" });
+  });
+});
+
+describe("competitor media uploads", () => {
+  // Month, Brand, Brand or rival name, Media, Spend, Spots, Share of voice %
+  it("matches the brand itself and its rivals, keeps manual rows, rejects unknown rivals and repeats", async () => {
+    const dettol = await addRival(db, { brandId, name: "Dettol" });
+    const file = (dettolSpend: number) => xlsx("competitor_media", [
+      ["2026-10", "Savlon Soap", "savlon soap", "TV", 3_000_000, 40, 35],
+      ["2026-10", "Savlon Soap", "Dettol", "Print", dettolSpend, 6, null],
+    ]);
+    const res = await confirmUpload(db, { kind: "competitor_media", fileName: "c1.xlsx", data: file(1_000), acceptMismatch: false });
+    expect(res.inserted).toBe(2);
+    let rows = await db.select().from(competitorMedia);
+    expect(rows.map((r) => [r.rivalId, r.media, r.spend]).sort()).toEqual([[dettol.id, "Press", 1_000], [null, "TV", 3_000_000]].sort());
+
+    await db.update(competitorMedia).set({ source: "manual", spend: 7 }).where(eq(competitorMedia.rivalId, dettol.id));
+    expect(await confirmUpload(db, { kind: "competitor_media", fileName: "c2.xlsx", data: file(2_000), acceptMismatch: false }))
+      .toMatchObject({ inserted: 1, skippedManual: 1 });
+    rows = await db.select().from(competitorMedia);
+    expect(rows.find((r) => r.rivalId === dettol.id)?.spend).toBe(7);
+
+    const bad = await previewUpload(db, { kind: "competitor_media", fileName: "b.xlsx", data: xlsx("competitor_media", [
+      ["2026-10", "Savlon Soap", "Lifebuoy", "TV", 1, null, null],
+      ["2026-10", "Savlon Soap", "Dettol", "OOH", 1, null, null],
+      ["2026-10", "Savlon Soap", "Dettol", "TV", 1, null, null],
+      ["2026-10", "Savlon Soap", "dettol", "television", 2, null, null],
+    ]) });
+    expect(bad.ok).toBe(false);
+    expect(bad.errors.map((e) => e.row)).toEqual([2, 3, 5]);
   });
 });

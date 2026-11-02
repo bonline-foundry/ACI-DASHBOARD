@@ -10,6 +10,7 @@ import { parseSheet, type CellValue, type ParsedRow, type RowError } from "@/lib
 import { TEMPLATES, type UploadKind } from "@/lib/upload/templates";
 import { ValidationError } from "./errors";
 import { loadLookups } from "./lookups";
+import { competitorMediaApplier } from "./appliers/competitor-media";
 import { digitalApplier } from "./appliers/digital";
 import { performanceApplier } from "./appliers/performance";
 import { planApplier } from "./appliers/plan";
@@ -21,6 +22,7 @@ const APPLIERS: Partial<Record<UploadKind, Applier>> = {
   plan: planApplier as Applier,
   performance: performanceApplier as Applier,
   digital: digitalApplier as Applier,
+  competitor_media: competitorMediaApplier as Applier,
 };
 
 export function supportsUpload(kind: UploadKind): boolean {

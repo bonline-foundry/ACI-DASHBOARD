@@ -5,11 +5,14 @@ export function FilterBar({
   brands,
   brandId,
   keep = {},
+  allowAll = true,
 }: {
   month: string;
   brands: { id: number; name: string }[];
   brandId?: number;
   keep?: Record<string, string>;
+  /** False when the page always needs one brand chosen. */
+  allowAll?: boolean;
 }) {
   return (
     <form method="get" className="flex flex-wrap items-center gap-2" aria-label="Filters">
@@ -23,7 +26,7 @@ export function FilterBar({
       <label className="flex items-center gap-1 text-sm text-stone-600">
         Brand
         <select name="brand" defaultValue={brandId ? String(brandId) : ""} className="h-8 rounded-lg border border-stone-300 bg-white px-2 text-sm">
-          <option value="">All brands</option>
+          {allowAll && <option value="">All brands</option>}
           {brands.map((b) => (
             <option key={b.id} value={b.id}>{b.name}</option>
           ))}
