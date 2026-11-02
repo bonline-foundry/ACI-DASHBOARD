@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { Pencil } from "lucide-react";
+import { IconAction } from "@/components/data/row-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -72,7 +74,7 @@ export function PerformanceResults({
                         {r.source === "manual" ? "Manual edit" : "Uploaded"}
                       </span>
                     </TableCell>
-                    <TableCell className="text-right"><Button size="sm" variant="ghost" onClick={() => enter(r.brandId)}>Edit</Button></TableCell>
+                    <TableCell className="text-right"><IconAction label="Edit" icon={Pencil} onClick={() => enter(r.brandId)} /></TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { useClearNewParam } from "@/lib/use-new-param";
 import { toast } from "sonner";
+import { BellRing, MoreHorizontal, Pencil, StickyNote } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -24,8 +27,16 @@ type Mode = { kind: "bill"; bill: BillView | null } | { kind: "note"; bill: Bill
 
 const selectClass = "h-9 w-full rounded-lg border border-gray-300 bg-white px-2 text-sm";
 
-export function BillsTable({ rows, vendors, brands, month, filtered }: { rows: BillView[]; vendors: Option[]; brands: Option[]; month: string; filtered: boolean }) {
-  const [mode, setMode] = useState<Mode>(null);
+export function BillsTable({
+  rows, vendors, brands, month, filtered, autoOpen = false, toolbar, unpaidNote,
+}: {
+  rows: BillView[]; vendors: Option[]; brands: Option[]; month: string; filtered: boolean; autoOpen?: boolean;
+  /** Wix-style filter toolbar shown inside the card, right above the table it filters. */
+  toolbar?: React.ReactNode;
+  unpaidNote?: string;
+}) {
+  const [mode, setMode] = useState<Mode>(autoOpen ? { kind: "bill", bill: null } : null);
+  useClearNewParam(autoOpen);
   const [pending, startTransition] = useTransition();
   const act = (fn: () => Promise<{ error: string | null }>, done: string) =>
     startTransition(async () => {
@@ -37,10 +48,14 @@ export function BillsTable({ rows, vendors, brands, month, filtered }: { rows: B
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Bills</CardTitle>
+        <div>
+          <CardTitle>Bills <span className="font-normal text-gray-400">{rows.length}</span></CardTitle>
+          {unpaidNote && <p className="text-xs text-gray-500">{unpaidNote}</p>}
+        </div>
         <Button onClick={() => setMode({ kind: "bill", bill: null })}>Add bill</Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        {toolbar}
         {rows.length === 0 ? (
           <EmptyState title={filtered ? "No bills match" : "No bills yet"} message={filtered ? "Change or clear the filters." : "Add a bill by hand or upload the bills file below."} />
         ) : (
@@ -74,10 +89,22 @@ export function BillsTable({ rows, vendors, brands, month, filtered }: { rows: B
                         {paid ? <span className="text-xs text-gray-500">Paid {r.paidAt}</span> : <AgeChip days={r.ageDays} bucket={r.bucket} />}
                         <p className="mt-1 text-xs text-gray-500">Billed {r.billDate}</p>
                       </TableCell>
-                      <TableCell className="space-x-0.5 text-right whitespace-nowrap">
+                      <TableCell className="text-right whitespace-nowrap">
                         {!paid && <Button size="sm" variant="secondary" disabled={pending} onClick={() => act(() => markPaidAction(r.id), `${r.billNo} marked paid`)}>Mark paid</Button>}
-                        {!paid && !r.openReminderId && <Button size="sm" variant="ghost" disabled={pending} onClick={() => act(() => remindAction(r.id), "Reminder added to Home")}>Remind</Button>}
-                        <Button size="sm" variant="ghost" onClick={() => setMode({ kind: "note", bill: r })}>Note</Button>
+                        {/* Wix-style "⋯" menu keeps less frequent actions out of the way (Hick's law). */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger aria-label={`More actions for ${r.billNo}`}
+                            className="ml-1 inline-grid size-9 place-items-center rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none">
+                            <MoreHorizontal className="size-4" aria-hidden />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem onClick={() => setMode({ kind: "bill", bill: r })}><Pencil aria-hidden />Open bill</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setMode({ kind: "note", bill: r })}><StickyNote aria-hidden />Note</DropdownMenuItem>
+                            {!paid && !r.openReminderId && (
+                              <DropdownMenuItem onClick={() => act(() => remindAction(r.id), "Reminder added to Home")}><BellRing aria-hidden />Remind</DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   );

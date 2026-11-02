@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Download } from "lucide-react";
+import { Download, Search } from "lucide-react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { getDb } from "@/db/client";
@@ -11,6 +11,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BILL_STATUSES, BILL_STATUS_LABELS } from "@/lib/bill-status";
 import { formatMillion, formatTaka } from "@/lib/money";
+import { cn } from "@/lib/utils";
 import { todayDhaka } from "@/lib/month";
 import { billSummary, listBills, type AgeFilter } from "@/server/billing";
 import { parseBillFilter } from "@/server/filters";
@@ -22,7 +23,7 @@ export const metadata: Metadata = { title: "Billing" };
 
 type Search = Promise<Record<string, string | string[] | undefined>>;
 
-const selectClass = "h-9 rounded-lg border border-gray-300 bg-white px-2 text-sm";
+const selectClass = "h-9 rounded-full border border-gray-200 bg-white px-3 text-sm shadow-xs";
 
 export default function BillingPage({ searchParams }: { searchParams: Search }) {
   return (
@@ -87,31 +88,36 @@ async function BillingContent({ searchParams }: { searchParams: Search }) {
         </Card>
       )}
 
-      <form method="get" aria-label="Bill filters" className="flex flex-wrap items-center gap-2">
-        <input name="q" defaultValue={filter.search ?? ""} placeholder="Search bill no, PO, vendor, note" aria-label="Search bills"
-          className="h-9 w-64 rounded-lg border border-gray-300 bg-white px-2 text-sm" />
-        <select name="status" aria-label="Status" defaultValue={filter.status ?? ""} className={selectClass}>
-          <option value="">Any status</option>
-          {BILL_STATUSES.map((s) => <option key={s} value={s}>{BILL_STATUS_LABELS[s]}</option>)}
-        </select>
-        <select name="brand" aria-label="Brand" defaultValue={filter.brandId ? String(filter.brandId) : ""} className={selectClass}>
-          <option value="">All brands</option>
-          {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-        </select>
-        <select name="age" aria-label="Age" defaultValue={filter.age ?? ""} className={selectClass}>
-          <option value="">Any age</option>
-          <option value="fresh">0–{t.billYellowDays - 1} days</option>
-          <option value="yellow">{t.billYellowDays}–{t.billRedDays - 1} days</option>
-          <option value="red">{t.billRedDays}+ days</option>
-          <option value="paid">Paid</option>
-        </select>
-        <Button type="submit" variant="outline" size="sm">Apply</Button>
-        {filtered && <Link href="/billing" className="text-sm text-gray-600 underline">Clear</Link>}
-        <a href={`/api/export/bills?${exportQuery}`} download className={buttonVariants({ variant: "secondary", size: "sm" })}><Download aria-hidden />Export to Excel</a>
-        <span className="text-xs text-gray-500">{summary.unpaid.count} unpaid · {formatTaka(summary.unpaid.amount)} BDT with VAT</span>
-      </form>
 
-      <BillsTable rows={rows} filtered={filtered} month={today.slice(0, 7)}
+      <BillsTable autoOpen={sp.new === "bill"} rows={rows}
+        toolbar={
+<form method="get" aria-label="Bill filters" className="flex flex-wrap items-center gap-2">
+              <label className="flex h-9 w-full items-center gap-2 rounded-full border border-gray-200 bg-white px-3 text-gray-400 shadow-xs focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 sm:w-72">
+                <Search className="size-4" aria-hidden />
+                <input name="q" defaultValue={filter.search ?? ""} placeholder="Search bill no, PO, vendor, note" aria-label="Search bills"
+                  className="h-8 min-w-0 flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400" />
+              </label>
+              <select name="status" aria-label="Status" defaultValue={filter.status ?? ""} className={selectClass}>
+                <option value="">Any status</option>
+                {BILL_STATUSES.map((s) => <option key={s} value={s}>{BILL_STATUS_LABELS[s]}</option>)}
+              </select>
+              <select name="brand" aria-label="Brand" defaultValue={filter.brandId ? String(filter.brandId) : ""} className={selectClass}>
+                <option value="">All brands</option>
+                {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+              <select name="age" aria-label="Age" defaultValue={filter.age ?? ""} className={selectClass}>
+                <option value="">Any age</option>
+                <option value="fresh">0–{t.billYellowDays - 1} days</option>
+                <option value="yellow">{t.billYellowDays}–{t.billRedDays - 1} days</option>
+                <option value="red">{t.billRedDays}+ days</option>
+                <option value="paid">Paid</option>
+              </select>
+              <Button type="submit" variant="outline">Apply</Button>
+              {filtered && <Link href="/billing" className="text-sm text-gray-600 underline">Clear</Link>}
+              <a href={`/api/export/bills?${exportQuery}`} download className={cn(buttonVariants({ variant: "secondary" }), "ml-auto")}><Download aria-hidden />Export to Excel</a>
+            </form>
+        }
+        unpaidNote={`${summary.unpaid.count} unpaid · ${formatTaka(summary.unpaid.amount)} BDT with VAT`} filtered={filtered} month={today.slice(0, 7)}
         vendors={vendors.map((v) => ({ id: v.id, name: v.name }))} brands={brands.map((b) => ({ id: b.id, name: b.name }))} />
 
       <UploadPanel kind="bills" />

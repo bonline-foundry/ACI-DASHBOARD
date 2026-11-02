@@ -49,39 +49,39 @@
 }
 
 :root {
-  /* Cool neutral canvas, white cards and one violet accent (Mixpanel / Wix direction). */
-  --background: oklch(0.982 0.003 264);
+  /* Wix grey-blue canvas and dark navy sidebar, Mixpanel violet accent. */
+  --background: oklch(0.968 0.006 255);
   --foreground: oklch(0.21 0.034 264.7);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.21 0.034 264.7);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.21 0.034 264.7);
-  --primary: oklch(0.53 0.23 285);
+  --primary: oklch(0.52 0.22 280);
   --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.967 0.003 264.5);
   --secondary-foreground: oklch(0.278 0.033 256.8);
   --muted: oklch(0.967 0.003 264.5);
   --muted-foreground: oklch(0.551 0.027 264.4);
-  --accent: oklch(0.955 0.025 290);
-  --accent-foreground: oklch(0.45 0.2 285);
+  --accent: oklch(0.955 0.03 282);
+  --accent-foreground: oklch(0.45 0.2 280);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.928 0.006 264.5);
   --input: oklch(0.89 0.008 264.5);
-  --ring: oklch(0.53 0.23 285);
-  --chart-1: oklch(0.53 0.23 285);
+  --ring: oklch(0.52 0.22 280);
+  --chart-1: oklch(0.52 0.22 280);
   --chart-2: oklch(0.7 0.14 182);
   --chart-3: oklch(0.75 0.16 70);
   --chart-4: oklch(0.62 0.2 20);
   --chart-5: oklch(0.6 0.15 240);
-  --radius: 0.75rem;
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.373 0.034 259.7);
-  --sidebar-primary: oklch(0.53 0.23 285);
+  --radius: 0.5rem;
+  --sidebar: oklch(0.235 0.03 258);
+  --sidebar-foreground: oklch(0.86 0.012 258);
+  --sidebar-primary: oklch(0.6 0.2 280);
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.955 0.025 290);
-  --sidebar-accent-foreground: oklch(0.45 0.2 285);
-  --sidebar-border: oklch(0.928 0.006 264.5);
-  --sidebar-ring: oklch(0.53 0.23 285);
+  --sidebar-accent: oklch(0.31 0.035 258);
+  --sidebar-accent-foreground: oklch(0.99 0 0);
+  --sidebar-border: oklch(0.31 0.03 258);
+  --sidebar-ring: oklch(0.6 0.2 280);
 }
 
 .dark {

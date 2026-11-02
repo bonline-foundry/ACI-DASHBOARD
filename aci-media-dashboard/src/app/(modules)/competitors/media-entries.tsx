@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { Pencil, Trash2 } from "lucide-react";
+import { IconAction } from "@/components/data/row-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -69,9 +71,9 @@ export function MediaEntries({ brandId, month, rows, subjects }: { brandId: numb
                         {r.source === "manual" ? "Manual edit" : "Uploaded"}
                       </span>
                     </TableCell>
-                    <TableCell className="space-x-1 text-right whitespace-nowrap">
-                      <Button size="sm" variant="ghost" onClick={() => edit(r)}>Edit</Button>
-                      <Button size="sm" variant="ghost" onClick={() => remove(r)} disabled={pending}>Delete</Button>
+                    <TableCell className="text-right whitespace-nowrap">
+                      <IconAction label="Edit" icon={Pencil} onClick={() => edit(r)} />
+                      <IconAction label="Delete" icon={Trash2} tone="danger" onClick={() => remove(r)} disabled={pending} />
                     </TableCell>
                   </TableRow>
                 ))}

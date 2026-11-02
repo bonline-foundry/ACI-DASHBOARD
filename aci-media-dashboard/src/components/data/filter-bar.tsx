@@ -1,5 +1,10 @@
+import { CalendarDays, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+const field = "flex h-9 items-center gap-2 rounded-full border border-gray-200 bg-white pr-1 pl-3 text-sm text-gray-500 shadow-xs focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20";
+const control = "h-8 border-0 bg-transparent pr-2 text-sm text-gray-900 outline-none";
+
+/** Wix-style filter pills: month and brand, then Apply. Sits right above what it filters (proximity). */
 export function FilterBar({
   month,
   brands,
@@ -19,21 +24,22 @@ export function FilterBar({
       {Object.entries(keep).map(([k, v]) => (
         <input key={k} type="hidden" name={k} value={v} />
       ))}
-      <label className="flex items-center gap-1 text-sm text-gray-600">
-        Month
-        <input type="month" name="month" defaultValue={month} className="h-9 rounded-lg border border-gray-300 bg-white px-2 text-sm" />
+      <label className={field}>
+        <CalendarDays className="size-4" aria-hidden />
+        <span className="sr-only">Month</span>
+        <input type="month" name="month" aria-label="Month" defaultValue={month} className={control} />
       </label>
-      <label className="flex items-center gap-1 text-sm text-gray-600">
-        Brand
-        <select name="brand" defaultValue={brandId ? String(brandId) : ""} className="h-9 rounded-lg border border-gray-300 bg-white px-2 text-sm">
+      <label className={field}>
+        <Tag className="size-4" aria-hidden />
+        <span className="sr-only">Brand</span>
+        <select name="brand" aria-label="Brand" defaultValue={brandId ? String(brandId) : ""} className={control}>
           {allowAll && <option value="">All brands</option>}
           {brands.map((b) => (
             <option key={b.id} value={b.id}>{b.name}</option>
           ))}
         </select>
       </label>
-      <Button type="submit" variant="outline" size="sm">Apply</Button>
-      <span className="text-xs text-gray-500">Costs with VAT</span>
+      <Button type="submit" variant="outline">Apply</Button>
     </form>
   );
 }

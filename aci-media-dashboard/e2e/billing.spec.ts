@@ -35,13 +35,15 @@ test("add an old bill, remind, note, mark paid; upload a bill and change its sta
   await expect(row).toContainText("Unpaid");
   await expect(row).toContainText("40 days");
 
-  await row.getByRole("button", { name: "Remind" }).click();
+  await row.getByRole("button", { name: `More actions for ${oldBill}` }).click();
+  await page.getByRole("menuitem", { name: "Remind" }).click();
   await expect(row).toContainText("Reminder on");
   await page.goto("/");
   await expect(page.getByTestId("home-reminders")).toContainText(oldBill);
   await page.goBack();
 
-  await row.getByRole("button", { name: "Note" }).click();
+  await row.getByRole("button", { name: `More actions for ${oldBill}` }).click();
+  await page.getByRole("menuitem", { name: "Note" }).click();
   dialog = page.getByRole("dialog");
   await dialog.getByLabel("Bill note").fill("Sent to finance");
   await dialog.getByRole("button", { name: "Save note" }).click();
@@ -64,12 +66,12 @@ test("add an old bill, remind, note, mark paid; upload a bill and change its sta
   await expect(uploaded).toContainText("Finance/Audit");
   await expect(uploaded).toContainText("20 days");
 
-  await uploaded.getByRole("button", { name: newBill }).click();
+  await uploaded.getByRole("button", { name: newBill, exact: true }).click();
   dialog = page.getByRole("dialog");
   await dialog.getByLabel("Bill status").selectOption({ label: "Bill Error" });
   await dialog.getByRole("button", { name: "Save bill" }).click();
   await expect(dialog).toBeHidden();
   await expect(uploaded).toContainText("Bill Error");
-  await uploaded.getByRole("button", { name: newBill }).click();
+  await uploaded.getByRole("button", { name: newBill, exact: true }).click();
   await expect(page.getByTestId("bill-history")).toContainText("Bill Error");
 });

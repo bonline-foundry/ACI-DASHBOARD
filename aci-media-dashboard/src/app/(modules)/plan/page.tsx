@@ -8,13 +8,13 @@ import { PageHeader } from "@/components/shell/page-header";
 import { FilterBar } from "@/components/data/filter-bar";
 import { buttonVariants } from "@/components/ui/button";
 import { addMonths, formatMonth, isMonth, monthBounds, todayDhaka } from "@/lib/month";
-import { cn } from "@/lib/utils";
 import { listBrandsWithRivals } from "@/server/master-data";
 import { listCampaigns, listChannels, planVsBudget } from "@/server/plan";
 import { PlanBoard, type PlanView } from "./plan-board";
 import { BudgetPanel } from "./budget-panel";
 import { UploadPanel } from "@/components/data/upload-panel";
 import { PageSkeleton } from "@/components/data/page-skeleton";
+import { SegmentedLinks } from "@/components/data/segmented";
 
 export const metadata: Metadata = { title: "Plan" };
 
@@ -69,18 +69,12 @@ async function PlanContent({ searchParams }: { searchParams: Search }) {
           <h2 className="min-w-36 text-center text-lg font-semibold">{formatMonth(month)}</h2>
           <Link href={href({ month: addMonths(month, 1) })} className={buttonVariants({ variant: "secondary", size: "icon" })} aria-label="Next month"><ChevronRight aria-hidden /></Link>
         </div>
-        <nav aria-label="Plan views" className="flex gap-1 rounded-lg bg-gray-200/60 p-1">
-          {VIEWS.map((v) => (
-            <Link key={v.key} href={href({ view: v.key })} aria-current={view === v.key ? "page" : undefined}
-              className={cn("rounded-md px-3 py-1 text-sm", view === v.key ? "bg-white font-medium shadow-sm" : "text-gray-600")}>
-              {v.label}
-            </Link>
-          ))}
-        </nav>
+        <SegmentedLinks label="Plan views" value={view} items={VIEWS.map((v) => ({ key: v.key, label: v.label, href: href({ view: v.key }) }))} />
         <FilterBar month={month} brands={activeBrands} brandId={brandId} keep={{ view }} />
       </div>
 
       <PlanBoard
+        autoOpen={sp.new === "campaign"}
         view={view}
         month={month}
         today={today}

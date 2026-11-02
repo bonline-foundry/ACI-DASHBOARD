@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useClearNewParam } from "@/lib/use-new-param";
 import { toast } from "sonner";
+import { Pencil, Trash2 } from "lucide-react";
+import { IconAction } from "@/components/data/row-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -34,9 +37,10 @@ export type SpendRow = {
 const selectClass = "h-9 w-full rounded-lg border border-gray-300 bg-white px-2 text-sm";
 
 export function SpendEntries({
-  month, rows, brands, channels, stations, vendors, brandId,
-}: { month: string; rows: SpendRow[]; brands: Option[]; channels: Option[]; stations: Option[]; vendors: Option[]; brandId?: number }) {
-  const [open, setOpen] = useState(false);
+  month, rows, brands, channels, stations, vendors, brandId, autoOpen = false,
+}: { month: string; rows: SpendRow[]; brands: Option[]; channels: Option[]; stations: Option[]; vendors: Option[]; brandId?: number; autoOpen?: boolean }) {
+  const [open, setOpen] = useState(autoOpen && brands.length > 0);
+  useClearNewParam(autoOpen);
   const [editing, setEditing] = useState<SpendRow | null>(null);
   const [pending, startTransition] = useTransition();
   const edit = (r: SpendRow | null) => {
@@ -84,9 +88,9 @@ export function SpendEntries({
                         {r.source === "manual" ? "Manual edit" : "Uploaded"}
                       </span>
                     </TableCell>
-                    <TableCell className="space-x-1 text-right whitespace-nowrap">
-                      <Button size="sm" variant="ghost" onClick={() => edit(r)}>Edit</Button>
-                      <Button size="sm" variant="ghost" onClick={() => remove(r)} disabled={pending}>Delete</Button>
+                    <TableCell className="text-right whitespace-nowrap">
+                      <IconAction label="Edit" icon={Pencil} onClick={() => edit(r)} />
+                      <IconAction label="Delete" icon={Trash2} tone="danger" onClick={() => remove(r)} disabled={pending} />
                     </TableCell>
                   </TableRow>
                 ))}

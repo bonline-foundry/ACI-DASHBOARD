@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Download } from "lucide-react";
-import Link from "next/link";
 import { connection } from "next/server";
 import { getDb } from "@/db/client";
 import { PageHeader } from "@/components/shell/page-header";
@@ -15,13 +14,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatMillion } from "@/lib/money";
 import { addMonths, formatMonth, todayDhaka } from "@/lib/month";
-import { cn } from "@/lib/utils";
 import { listBrandsWithRivals, listTvStations, listVendors } from "@/server/master-data";
 import { listChannels } from "@/server/plan";
 import { parseSpendQuery } from "@/server/filters";
 import { listSpendEntries, spendBreakdown, spendMatrix, type ChannelGroup } from "@/server/spend";
 import { SpendEntries } from "./spend-entries";
 import { PageSkeleton } from "@/components/data/page-skeleton";
+import { SegmentedLinks } from "@/components/data/segmented";
 
 export const metadata: Metadata = { title: "Spend" };
 
@@ -81,6 +80,7 @@ async function SpendContent({ searchParams }: { searchParams: Search }) {
 
       <StatGrid>
         <StatCard label={`Spend in ${formatMonth(month)}`} value={`${formatMillion(monthTotal)}M`} tone="accent" testId="kpi-month-spend"
+          trend={months.map((m) => matrix.totals[m] ?? 0)}
           note={group ? `${GROUP_TABS.find((t) => t.key === group)?.label} only · BDT with VAT` : "All media · BDT with VAT"} />
         <StatCard label={`Change vs ${formatMonth(prev)}`} testId="kpi-change"
           value={change === null ? "–" : `${change >= 0 ? "+" : "−"}${Math.abs(change).toFixed(1)}%`}
@@ -95,14 +95,7 @@ async function SpendContent({ searchParams }: { searchParams: Search }) {
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
           <CardTitle>Spend by brand and month (million BDT, with VAT)</CardTitle>
-          <nav aria-label="Media" className="flex flex-wrap gap-1 rounded-lg bg-gray-200/60 p-1">
-            {GROUP_TABS.map((t) => (
-              <Link key={t.key} href={tabHref(t.key)} aria-current={(group ?? "") === t.key ? "page" : undefined}
-                className={cn("rounded-md px-3 py-1 text-sm", (group ?? "") === t.key ? "bg-white font-medium shadow-sm" : "text-gray-600")}>
-                {t.label}
-              </Link>
-            ))}
-          </nav>
+          <SegmentedLinks label="Media" value={group ?? ""} items={GROUP_TABS.map((t) => ({ key: t.key, label: t.label, href: tabHref(t.key) }))} />
         </CardHeader>
         <CardContent>
           {matrix.rows.length === 0 ? (
@@ -144,6 +137,7 @@ async function SpendContent({ searchParams }: { searchParams: Search }) {
       </Card>
 
       <SpendEntries
+        autoOpen={sp.new === "entry"}
         month={month}
         rows={entries}
         brands={brands}

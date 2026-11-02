@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { Pencil, Trash2 } from "lucide-react";
+import { IconAction } from "@/components/data/row-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -9,9 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/data/empty-state";
-import { cn } from "@/lib/utils";
 import type { CompetitorAdView } from "@/server/competitors";
 import { deleteAdAction, saveAdAction } from "./actions";
+import { SegmentedButtons } from "@/components/data/segmented";
 
 type Rival = { id: number; name: string };
 
@@ -48,14 +50,8 @@ export function AdLog({ brandId, rows, rivals }: { brandId: number; rows: Compet
       <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
         <CardTitle>Meta and TikTok ad log</CardTitle>
         <div className="flex items-center gap-2">
-          <div role="group" aria-label="Ad platform" className="flex gap-1 rounded-lg bg-gray-200/60 p-1">
-            {(["", ...PLATFORMS] as const).map((p) => (
-              <button key={p || "all"} type="button" aria-pressed={platform === p} onClick={() => setPlatform(p)}
-                className={cn("rounded-md px-3 py-1 text-sm", platform === p ? "bg-white font-medium shadow-sm" : "text-gray-600")}>
-                {p || "All"}
-              </button>
-            ))}
-          </div>
+          <SegmentedButtons label="Ad platform" value={platform} onChange={setPlatform}
+            items={[{ key: "" as const, label: "All" }, ...PLATFORMS.map((p) => ({ key: p, label: p }))]} />
           <Button onClick={() => edit(null)} disabled={rivals.length === 0}>Add ad</Button>
         </div>
       </CardHeader>
@@ -85,9 +81,9 @@ export function AdLog({ brandId, rows, rivals }: { brandId: number; rows: Compet
                     <TableCell>
                       {r.adUrl ? <a href={r.adUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline">Open</a> : "–"}
                     </TableCell>
-                    <TableCell className="space-x-1 text-right whitespace-nowrap">
-                      <Button size="sm" variant="ghost" onClick={() => edit(r)}>Edit</Button>
-                      <Button size="sm" variant="ghost" onClick={() => remove(r)} disabled={pending}>Delete</Button>
+                    <TableCell className="text-right whitespace-nowrap">
+                      <IconAction label="Edit" icon={Pencil} onClick={() => edit(r)} />
+                      <IconAction label="Delete" icon={Trash2} tone="danger" onClick={() => remove(r)} disabled={pending} />
                     </TableCell>
                   </TableRow>
                 ))}

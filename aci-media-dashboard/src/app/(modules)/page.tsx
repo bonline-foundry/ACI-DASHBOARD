@@ -4,6 +4,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { getDb } from "@/db/client";
 import { PageHeader } from "@/components/shell/page-header";
+import { CardLink } from "@/components/data/card-link";
 import { StatCard, StatGrid } from "@/components/data/stat-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,10 +25,15 @@ const LEVEL_BAR = { ok: "bg-primary", orange: "bg-orange-500", red: "bg-red-600"
 const LEVEL_TEXT = { ok: "text-gray-700", orange: "text-orange-700", red: "text-red-700", "no-budget": "text-gray-400" } as const;
 const longDate = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 
+function Greeting() {
+  const hour = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Dhaka", hour: "numeric", hourCycle: "h23" }).format(new Date()));
+  const part = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  return <PageHeader title={part} subtitle="Here is what needs attention today. All amounts in BDT, with VAT." />;
+}
+
 export default function HomePage({ searchParams }: { searchParams: Search }) {
   return (
     <>
-      <PageHeader title="Home" subtitle="What needs attention today · costs with VAT" />
       <Suspense fallback={<PageSkeleton label="Loading" />}>
         <HomeContent searchParams={searchParams} />
       </Suspense>
@@ -50,8 +56,8 @@ async function HomeContent({ searchParams }: { searchParams: Search }) {
 
   return (
     <div className="space-y-6">
+      <div className="[&>header]:mb-0"><Greeting /></div>
       <form method="get" aria-label="Home month" className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
-        <span>Today is {longDate(today)}.</span>
         <label className="flex items-center gap-1">Budget month
           <input type="month" name="month" defaultValue={month} className="h-9 rounded-lg border border-gray-300 bg-white px-2 text-sm" />
         </label>
@@ -89,9 +95,12 @@ async function HomeContent({ searchParams }: { searchParams: Search }) {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card>
-          <CardHeader>
-            <CardTitle>Budget used · {formatMonth(month)}</CardTitle>
-            <p className="text-xs text-gray-500">Actual spend against budget. Orange from {t.budgetOrangePct}%, red from {t.budgetRedPct}%.</p>
+          <CardHeader className="flex flex-row items-start justify-between gap-2">
+            <div>
+            <CardTitle>Budget used</CardTitle>
+            <p className="text-xs text-gray-500">{formatMonth(month)} · actual spend against budget. Orange from {t.budgetOrangePct}%, red from {t.budgetRedPct}%.</p>
+            </div>
+            <CardLink href={`/plan?month=${month}`}>Open plan</CardLink>
           </CardHeader>
           <CardContent>
             {h.budgets.length === 0 ? <p className="text-sm text-gray-500">No active brands yet.</p> : (
@@ -111,7 +120,6 @@ async function HomeContent({ searchParams }: { searchParams: Search }) {
                 ))}
               </ul>
             )}
-            <Link href={`/plan?month=${month}`} className="mt-3 inline-block text-sm text-primary underline">Open Plan</Link>
           </CardContent>
         </Card>
 
@@ -151,14 +159,16 @@ async function HomeContent({ searchParams }: { searchParams: Search }) {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>Best channel for reach</CardTitle></CardHeader>
+          <CardHeader className="flex flex-row items-start justify-between gap-2">
+            <CardTitle>Best channel for reach</CardTitle>
+            <CardLink href={`/performance?month=${h.bestReach?.month ?? month}`}>Compare</CardLink>
+          </CardHeader>
           <CardContent data-testid="home-best-reach">
             {h.bestReach ? (
               <>
                 <p className="text-2xl font-semibold">{h.bestReach.row.name}</p>
                 <p className="text-sm text-gray-600">{formatTaka(h.bestReach.row.costPer1000!)} BDT to reach 1,000 people</p>
                 <p className="mt-1 text-xs text-gray-500">Lowest cost in {formatMonth(h.bestReach.month)}{h.bestReach.month !== month ? " (latest month with numbers)" : ""}</p>
-                <Link href={`/performance?month=${h.bestReach.month}`} className="mt-3 inline-block text-sm text-primary underline">Compare channels</Link>
               </>
             ) : (
               <p className="text-sm text-gray-500">No reach numbers yet. Enter them on the <Link href="/performance" className="underline">Performance</Link> page.</p>
@@ -178,7 +188,10 @@ async function HomeContent({ searchParams }: { searchParams: Search }) {
 function CampaignList({ title, testId, empty, rows, today }: { title: string; testId: string; empty: string; rows: CampaignView[]; today: string }) {
   return (
     <Card>
-      <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
+      <CardHeader className="flex flex-row items-start justify-between gap-2">
+        <CardTitle>{title}</CardTitle>
+        <CardLink href={`/plan?month=${today.slice(0, 7)}`}>Open plan</CardLink>
+      </CardHeader>
       <CardContent>
         {rows.length === 0 ? <p className="text-sm text-gray-500" data-testid={testId}>{empty}</p> : (
           <ul className="divide-y divide-gray-100 text-sm" data-testid={testId}>
@@ -198,7 +211,6 @@ function CampaignList({ title, testId, empty, rows, today }: { title: string; te
             })}
           </ul>
         )}
-        <Link href={`/plan?month=${today.slice(0, 7)}`} className="mt-3 inline-block text-sm text-primary underline">Open the plan</Link>
       </CardContent>
     </Card>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useClearNewParam } from "@/lib/use-new-param";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState } from "@/components/data/empty-state";
@@ -30,6 +31,7 @@ export function PlanBoard({
   channels,
   campaigns,
   brandId,
+  autoOpen = false,
 }: {
   view: PlanView;
   month: string;
@@ -38,9 +40,12 @@ export function PlanBoard({
   channels: Option[];
   campaigns: CampaignView[];
   brandId?: number;
+  /** Open the "add campaign" dialog on load (from Quick actions). */
+  autoOpen?: boolean;
 }) {
   const [editing, setEditing] = useState<CampaignView | null>(null);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(autoOpen && brands.length > 0);
+  useClearNewParam(autoOpen);
   const openCampaign = (c: CampaignView | null) => {
     setEditing(c);
     setOpen(true);

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import Link from "next/link";
 import { connection } from "next/server";
 import { getDb } from "@/db/client";
 import { PageHeader } from "@/components/shell/page-header";
@@ -12,13 +11,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatTaka } from "@/lib/money";
 import { formatMonth, isMonth, todayDhaka } from "@/lib/month";
-import { cn } from "@/lib/utils";
 import { listBrandsWithRivals } from "@/server/master-data";
 import { listChannels } from "@/server/plan";
 import { listPerformance, reachCost, type ReachView } from "@/server/performance";
 import { CHANNEL_GROUPS } from "@/server/spend";
 import { PerformanceResults } from "./performance-results";
 import { PageSkeleton } from "@/components/data/page-skeleton";
+import { SegmentedLinks } from "@/components/data/segmented";
 
 export const metadata: Metadata = { title: "Performance" };
 
@@ -87,14 +86,7 @@ async function PerformanceContent({ searchParams }: { searchParams: Search }) {
               <CardTitle>Cost to reach 1,000 people · {formatMonth(month)}</CardTitle>
               <p className="text-xs text-gray-500">BDT with VAT. Shorter bar is better.</p>
             </div>
-            <nav aria-label="Channels" className="flex gap-1 rounded-lg bg-gray-200/60 p-1">
-              {VIEW_TABS.map((t) => (
-                <Link key={t.key} href={tabHref(t.key)} aria-current={view === t.key ? "page" : undefined}
-                  className={cn("rounded-md px-3 py-1 text-sm", view === t.key ? "bg-white font-medium shadow-sm" : "text-gray-600")}>
-                  {t.label}
-                </Link>
-              ))}
-            </nav>
+            <SegmentedLinks label="Channels" value={view} items={VIEW_TABS.map((t) => ({ key: t.key, label: t.label, href: tabHref(t.key) }))} />
           </CardHeader>
           <CardContent>
             <BarList rows={bars} testId="reach-chart" empty="No channels in this view." />

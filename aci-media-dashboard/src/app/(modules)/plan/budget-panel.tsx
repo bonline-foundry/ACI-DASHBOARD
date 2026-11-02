@@ -76,7 +76,7 @@ export function BudgetPanel({ month, rows }: { month: string; rows: BudgetRow[] 
             Reason
             <Input name="reason" aria-label="Budget reason" placeholder="Why is this budget set or changed?" required />
           </label>
-          <Button type="submit">Set budget</Button>
+          <Button type="submit" variant="outline">Set budget</Button>
         </ActionForm>
       </CardContent>
     </Card>

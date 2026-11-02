@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV_GROUPS, NAV_ITEMS } from "./nav-items";
+import { QuickActions } from "./quick-actions";
 
 const ICONS: Record<string, LucideIcon> = {
   "/": House,
@@ -20,24 +21,27 @@ const ICONS: Record<string, LucideIcon> = {
   "/settings": Settings,
 };
 
+/** Wix-style dark navigation: brand, quick actions, short grouped lists, signed-in user. */
 export function Sidebar() {
   const pathname = usePathname();
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   return (
-    <div className="flex h-full flex-col">
-      <Link href="/" className="flex items-center gap-2.5 px-5 py-4 md:py-6" aria-label="ACI Media home">
-        <span className="grid size-9 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-sm">A</span>
+    <div className="flex h-full flex-col text-sidebar-foreground">
+      <Link href="/" className="flex items-center gap-2.5 px-5 pt-5 pb-4" aria-label="ACI Media home">
+        <span className="grid size-9 place-items-center rounded-lg bg-sidebar-primary text-sm font-bold text-sidebar-primary-foreground">A</span>
         <span className="leading-tight">
-          <span className="block text-[15px] font-semibold text-gray-900">ACI Media</span>
-          <span className="block text-xs text-gray-500">Consumer Brands</span>
+          <span className="block text-[15px] font-semibold text-white">ACI Media</span>
+          <span className="block text-xs text-sidebar-foreground/70">Consumer Brands</span>
         </span>
       </Link>
 
-      <nav aria-label="Main" className="flex gap-1 overflow-x-auto px-3 pb-3 md:flex-1 md:flex-col md:gap-0 md:overflow-visible md:pb-0">
+      <div className="hidden px-4 pb-4 md:block"><QuickActions /></div>
+
+      <nav aria-label="Main" className="flex gap-1 overflow-x-auto px-3 pb-3 md:flex-1 md:flex-col md:gap-0 md:overflow-y-auto md:pb-0">
         {NAV_GROUPS.map((group) => (
-          <div key={group || "top"} className="flex gap-1 md:mb-4 md:flex-col md:gap-0.5">
-            {group && <p className="hidden px-3 pb-1 text-[11px] font-medium tracking-wider text-gray-400 uppercase md:block">{group}</p>}
+          <div key={group || "top"} className="flex gap-1 md:mb-3 md:flex-col md:gap-0.5 md:border-t md:border-sidebar-border md:pt-3 md:first:border-t-0 md:first:pt-0">
+            {group && <p className="hidden px-3 pb-1 text-[11px] font-medium tracking-wider text-sidebar-foreground/50 uppercase md:block">{group}</p>}
             {NAV_ITEMS.filter((i) => i.group === group).map((item) => {
               const Icon = ICONS[item.href];
               const active = isActive(item.href);
@@ -48,11 +52,11 @@ export function Sidebar() {
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     // Whole 40px row is the target (Fitts's law).
-                    "flex h-10 shrink-0 items-center gap-3 rounded-lg px-3 text-sm whitespace-nowrap text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900",
-                    active && "bg-accent font-medium text-accent-foreground hover:bg-accent hover:text-accent-foreground",
+                    "relative flex h-10 shrink-0 items-center gap-3 rounded-md px-3 text-sm whitespace-nowrap transition-colors hover:bg-sidebar-accent hover:text-white",
+                    active && "bg-sidebar-accent font-medium text-white md:before:absolute md:before:inset-y-2 md:before:left-0 md:before:w-[3px] md:before:rounded-full md:before:bg-sidebar-primary",
                   )}
                 >
-                  {Icon && <Icon className={cn("size-[18px] shrink-0", active ? "text-primary" : "text-gray-400")} aria-hidden />}
+                  {Icon && <Icon className={cn("size-[18px] shrink-0", active ? "text-white" : "text-sidebar-foreground/60")} aria-hidden />}
                   {item.label}
                 </Link>
               );
@@ -61,9 +65,12 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="m-3 hidden rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-500 md:block">
-        <p className="font-medium text-gray-700">Admin</p>
-        <p>All amounts in BDT, with VAT</p>
+      <div className="hidden items-center gap-3 border-t border-sidebar-border px-5 py-4 md:flex">
+        <span className="grid size-8 place-items-center rounded-full bg-sidebar-accent text-xs font-semibold text-white">AD</span>
+        <span className="leading-tight">
+          <span className="block text-sm font-medium text-white">Admin</span>
+          <span className="block text-xs text-sidebar-foreground/60">Single user</span>
+        </span>
       </div>
     </div>
   );
