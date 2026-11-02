@@ -14,3 +14,11 @@ export function formatMillion(taka: number): string {
 export function formatTaka(taka: number): string {
   return Math.round(taka).toLocaleString("en-IN");
 }
+
+/** Whole numbers such as people reached or impressions, with en-IN grouping. */
+export const formatCount = formatTaka;
+
+/** Small rates such as cost per view or CPM, always two decimals. */
+export function formatRate(taka: number): string {
+  return taka.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}

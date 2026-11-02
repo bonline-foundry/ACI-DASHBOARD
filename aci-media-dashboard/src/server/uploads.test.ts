@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { createTestDb } from "@/db/test-db";
 import { seedReferenceData } from "@/db/seed";
 import type { Db } from "@/db/types";
-import { campaigns, historyLog, spendEntries, tvStations, vendors } from "@/db/schema";
+import { campaigns, digitalEntries, historyLog, performanceEntries, spendEntries, tvStations, vendors } from "@/db/schema";
 import { TEMPLATES, type UploadKind } from "@/lib/upload/templates";
 import { createBrand, listBusinesses } from "./master-data";
 import { confirmUpload, listUploads, previewUpload, restoreUpload } from "./uploads";
@@ -126,5 +126,56 @@ describe("plan uploads", () => {
     expect(rows.map((r) => [r.name, r.status, r.source]).sort()).toEqual([["Puja burst", "live", "upload"], ["Winter", "planned", "upload"]]);
     const [puja] = rows.filter((r) => r.name === "Puja burst");
     expect(puja.brandId).toBe(brandId);
+  });
+});
+
+describe("performance uploads", () => {
+  // Month, Brand, Channel, Spend, People reached, GRP, SOV %, SOS %, 1+ reach %, CPRP
+  const perfFile = (tvSpend: number, extra: unknown[][] = []) => xlsx("performance", [
+    ["2026-10", "Savlon Soap", "TV", tvSpend, 2_000_000, 310, 22.5, 18, 61, 12_900],
+    ["2026-10", "Savlon Soap", "Facebook", 1_000_000, 4_000_000, null, null, null, null, null],
+    ...extra,
+  ]);
+
+  it("saves rows and keeps a manual row on re-upload", async () => {
+    const res = await confirmUpload(db, { kind: "performance", fileName: "p1.xlsx", data: perfFile(4_000_000), acceptMismatch: false });
+    expect(res.inserted).toBe(2);
+    const tv = (await db.select().from(performanceEntries)).find((r) => r.grp !== null)!;
+    expect(tv).toMatchObject({ spend: 4_000_000, peopleReached: 2_000_000, grp: 310, shareOfVoice: 22.5, source: "upload" });
+    await db.update(performanceEntries).set({ source: "manual", spend: 1 }).where(eq(performanceEntries.id, tv.id));
+
+    const again = await confirmUpload(db, { kind: "performance", fileName: "p2.xlsx", data: perfFile(5_000_000), acceptMismatch: false });
+    expect(again).toMatchObject({ inserted: 1, skippedManual: 1 });
+    expect((await db.select().from(performanceEntries)).map((r) => [r.source, r.spend]).sort()).toEqual([["manual", 1], ["upload", 1_000_000]]);
+  });
+
+  it("fails on repeated channels and TV-only numbers on other channels", async () => {
+    const p = await previewUpload(db, {
+      kind: "performance", fileName: "bad.xlsx",
+      data: perfFile(4_000_000, [
+        ["2026-10", "Savlon Soap", "television", 1, null, null, null, null, null, null],
+        ["2026-10", "Savlon Soap", "Press", 1, null, 50, null, null, null, null],
+      ]),
+    });
+    expect(p.ok).toBe(false);
+    expect(p.errors.map((e) => e.message)).toEqual(["Same brand, month and channel as row 2", "GRP is only for TV"]);
+  });
+});
+
+describe("digital uploads", () => {
+  // Month, Brand, Platform, Spend, Reach, Impressions, CPM, ThruPlays, Cost per view, Engagement
+  it("saves Meta, YouTube and TikTok rows and rejects other platforms", async () => {
+    const good = xlsx("digital", [
+      ["2026-10", "Savlon Soap", "Facebook", 50_000, 400_000, 1_000_000, null, 25_000, null, 3_200],
+      ["2026-10", "Savlon Soap", "YouTube", 20_000, 150_000, null, null, 40_000, 0.5, null],
+      ["2026-10", "Savlon Soap", "tiktok", null, 90_000, null, null, null, null, 800],
+    ]);
+    const res = await confirmUpload(db, { kind: "digital", fileName: "d.xlsx", data: good, acceptMismatch: false });
+    expect(res.inserted).toBe(3);
+    expect((await db.select().from(digitalEntries)).every((r) => r.source === "upload")).toBe(true);
+
+    const bad = await previewUpload(db, { kind: "digital", fileName: "b.xlsx", data: xlsx("digital", [["2026-10", "Savlon Soap", "TV", 1, null, null, null, null, null, null]]) });
+    expect(bad.ok).toBe(false);
+    expect(bad.errors[0]).toMatchObject({ column: "Platform" });
   });
 });

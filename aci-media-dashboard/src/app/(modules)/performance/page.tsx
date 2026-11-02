@@ -1,11 +1,153 @@
+import { Suspense } from "react";
+import Link from "next/link";
+import { connection } from "next/server";
+import { getDb } from "@/db/client";
 import { PageHeader } from "@/components/shell/page-header";
-import { EmptyState } from "@/components/data/empty-state";
+import { FilterBar } from "@/components/data/filter-bar";
+import { BarList } from "@/components/data/bar-list";
+import { SourceTag } from "@/components/data/source-tag";
+import { UploadPanel } from "@/components/data/upload-panel";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { formatTaka } from "@/lib/money";
+import { formatMonth, isMonth, todayDhaka } from "@/lib/month";
+import { cn } from "@/lib/utils";
+import { listBrandsWithRivals } from "@/server/master-data";
+import { listChannels } from "@/server/plan";
+import { listPerformance, reachCost, type ReachView } from "@/server/performance";
+import { CHANNEL_GROUPS } from "@/server/spend";
+import { PerformanceResults } from "./performance-results";
 
-export default function Page() {
+type Search = Promise<Record<string, string | string[] | undefined>>;
+
+const VIEW_TABS: { key: ReachView; label: string }[] = [
+  { key: "all", label: "Both" },
+  { key: "TV", label: "TV" },
+  { key: "DIGITAL", label: "Digital" },
+];
+
+export default function PerformancePage({ searchParams }: { searchParams: Search }) {
   return (
     <>
-      <PageHeader title="Performance" subtitle="Costs with VAT" />
-      <EmptyState title="Not built yet" message="This module is added in a later build plan." />
+      <PageHeader title="Performance" subtitle="Which channel reaches 1,000 people for the least money" />
+      <Suspense fallback={<p className="text-sm text-stone-500">Loading performance…</p>}>
+        <PerformanceContent searchParams={searchParams} />
+      </Suspense>
     </>
+  );
+}
+
+const pct = (v: number | null) => (v === null ? "–" : `${v}%`);
+const plain = (v: number | null) => (v === null ? "–" : v.toLocaleString("en-IN"));
+
+async function PerformanceContent({ searchParams }: { searchParams: Search }) {
+  await connection();
+  const sp = await searchParams;
+  const month = typeof sp.month === "string" && isMonth(sp.month) ? sp.month : todayDhaka().slice(0, 7);
+  const brandId = typeof sp.brand === "string" && /^\d+$/.test(sp.brand) ? Number(sp.brand) : undefined;
+  const view: ReachView = VIEW_TABS.some((t) => t.key === sp.view) ? (sp.view as ReachView) : "all";
+
+  const db = getDb();
+  const [allBrands, channels, costs, entries] = await Promise.all([
+    listBrandsWithRivals(db), listChannels(db), reachCost(db, { month, brandId, view }), listPerformance(db, { month, brandId }),
+  ]);
+  const brands = allBrands.filter((b) => b.active).map((b) => ({ id: b.id, name: b.name }));
+
+  // Every channel in the chosen view gets a bar; channels without numbers show "No data".
+  const inView = channels.filter((c) => view === "all" || CHANNEL_GROUPS[view].includes(c.code));
+  const best = costs.find((c) => c.costPer1000 !== null);
+  const bars = [
+    ...costs,
+    ...inView.filter((c) => !costs.some((x) => x.channelId === c.id)).map((c) => ({ channelId: c.id, code: c.code, name: c.name, spend: 0, peopleReached: 0, costPer1000: null })),
+  ].map((c) => ({
+    key: c.code, label: c.name, value: c.costPer1000, display: c.costPer1000 === null ? "" : `${formatTaka(c.costPer1000)} BDT`,
+    note: best && c.channelId === best.channelId ? "Best value" : undefined, highlight: best?.channelId === c.channelId,
+  }));
+  const tvRows = entries.filter((e) => e.channelCode === "TV");
+  const latest = entries.reduce<string | null>((m, r) => (!m || r.updatedAt > m ? r.updatedAt : m), null);
+  const sources = new Set(entries.map((e) => e.source));
+  const source = sources.size === 0 ? null : sources.size > 1 ? "mixed" : [...sources][0];
+  const tabHref = (v: ReachView) => {
+    const q = new URLSearchParams({ month, ...(brandId ? { brand: String(brandId) } : {}), ...(v !== "all" ? { view: v } : {}) });
+    return `/performance?${q.toString()}`;
+  };
+
+  return (
+    <div className="space-y-6">
+      <FilterBar month={month} brands={brands} brandId={brandId} keep={view !== "all" ? { view } : {}} />
+
+      <div className="grid gap-6 lg:grid-cols-5">
+        <Card className="lg:col-span-3">
+          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
+            <div>
+              <CardTitle>Cost to reach 1,000 people · {formatMonth(month)}</CardTitle>
+              <p className="text-xs text-stone-500">BDT with VAT. Shorter bar is better.</p>
+            </div>
+            <nav aria-label="Channels" className="flex gap-1 rounded-lg bg-stone-200/60 p-1">
+              {VIEW_TABS.map((t) => (
+                <Link key={t.key} href={tabHref(t.key)} aria-current={view === t.key ? "page" : undefined}
+                  className={cn("rounded-md px-3 py-1 text-sm", view === t.key ? "bg-white font-medium shadow-sm" : "text-stone-600")}>
+                  {t.label}
+                </Link>
+              ))}
+            </nav>
+          </CardHeader>
+          <CardContent>
+            <BarList rows={bars} testId="reach-chart" empty="No channels in this view." />
+            <div className="mt-3"><SourceTag source={source as "upload" | "manual" | "mixed" | null} updatedAt={latest} label="All figures" /></div>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-2">
+          <CardHeader><CardTitle>What this means</CardTitle></CardHeader>
+          <CardContent className="space-y-2 text-sm text-stone-700">
+            {best ? (
+              <p data-testid="best-channel"><span className="font-medium">{best.name}</span> reached 1,000 people for {formatTaka(best.costPer1000!)} BDT, the lowest cost this month.</p>
+            ) : (
+              <p>No channel has both spend and people reached yet for {formatMonth(month)}.</p>
+            )}
+            <p className="text-stone-500">Cost per 1,000 reached = spend ÷ people reached × 1,000. Channels without a people reached number show &quot;No data&quot;.</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader><CardTitle>TV numbers · {formatMonth(month)}</CardTitle></CardHeader>
+        <CardContent>
+          {tvRows.length === 0 ? (
+            <p className="text-sm text-stone-500">No TV numbers this month.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table data-testid="tv-numbers">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Brand</TableHead><TableHead className="text-right">GRP</TableHead><TableHead className="text-right">Share of voice</TableHead>
+                    <TableHead className="text-right">Share of spend</TableHead><TableHead className="text-right">1+ reach</TableHead>
+                    <TableHead className="text-right">Cost per rating point</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tvRows.map((r) => (
+                    <TableRow key={r.id}>
+                      <TableCell>{r.brandName}</TableCell>
+                      <TableCell className="text-right tabular-nums">{plain(r.grp)}</TableCell>
+                      <TableCell className="text-right tabular-nums">{pct(r.shareOfVoice)}</TableCell>
+                      <TableCell className="text-right tabular-nums">{pct(r.shareOfSpend)}</TableCell>
+                      <TableCell className="text-right tabular-nums">{pct(r.reach1Plus)}</TableCell>
+                      <TableCell className="text-right tabular-nums">{r.cprp === null ? "–" : formatTaka(r.cprp)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <PerformanceResults month={month} rows={entries} brands={brands} brandId={brandId}
+        channels={channels.map((c) => ({ id: c.id, name: c.name, code: c.code }))} />
+
+      <UploadPanel kind="performance" />
+    </div>
   );
 }

@@ -18,6 +18,7 @@ const CHANNEL_ALIASES: Record<string, string> = {
 export type Lookups = {
   brand(name: string): number | undefined;
   channel(name: string): number | undefined;
+  channelCode(id: number): string | undefined;
   vendor(name: string): number | undefined;
   tvStation(name: string): number | undefined;
   rival(brandId: number, name: string): number | undefined;
@@ -41,12 +42,14 @@ export async function loadLookups(db: Db): Promise<Lookups> {
     channelMap.set(normName(ch.code), ch.id);
   }
   const codeToId = new Map(c.map((ch) => [ch.code, ch.id]));
+  const idToCode = new Map(c.map((ch) => [ch.id, ch.code]));
   return {
     brand: (n) => brandMap.get(normName(n)),
     channel: (n) => {
       const key = normName(n);
       return channelMap.get(key) ?? (CHANNEL_ALIASES[key] ? codeToId.get(CHANNEL_ALIASES[key]) : undefined);
     },
+    channelCode: (id) => idToCode.get(id),
     vendor: (n) => vendorMap.get(normName(n)),
     tvStation: (n) => stationMap.get(normName(n)),
     rival: (brandId, n) => r.find((x) => x.brandId === brandId && normName(x.name) === normName(n))?.id,
