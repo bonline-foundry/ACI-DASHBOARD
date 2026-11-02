@@ -26,3 +26,22 @@ export function formatMonth(month: string): string {
   const [y, m] = month.split("-").map(Number);
   return `${NAMES[m - 1]} ${y}`;
 }
+
+export function todayDhaka(now: Date = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dhaka", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+}
+
+export function addMonths(month: string, n: number): string {
+  const [y, m] = month.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + n, 1));
+  return d.toISOString().slice(0, 7);
+}
+
+export function daysInMonth(month: string): number {
+  const [y, m] = month.split("-").map(Number);
+  return new Date(Date.UTC(y, m, 0)).getUTCDate();
+}
+
+export function monthBounds(month: string): { start: string; end: string } {
+  return { start: `${month}-01`, end: `${month}-${String(daysInMonth(month)).padStart(2, "0")}` };
+}
