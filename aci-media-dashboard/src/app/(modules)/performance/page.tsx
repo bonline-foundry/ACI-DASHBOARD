@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
@@ -17,6 +18,8 @@ import { listChannels } from "@/server/plan";
 import { listPerformance, reachCost, type ReachView } from "@/server/performance";
 import { CHANNEL_GROUPS } from "@/server/spend";
 import { PerformanceResults } from "./performance-results";
+
+export const metadata: Metadata = { title: "Performance" };
 
 type Search = Promise<Record<string, string | string[] | undefined>>;
 

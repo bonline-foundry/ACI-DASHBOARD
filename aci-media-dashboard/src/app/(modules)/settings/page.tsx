@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { getDb } from "@/db/client";
@@ -12,6 +13,8 @@ import { TEMPLATES, UPLOAD_KINDS } from "@/lib/upload/templates";
 import {
   addRivalAction, createBrandAction, createTvStationAction, createVendorAction, removeRivalAction, setThresholdsAction,
 } from "./actions";
+
+export const metadata: Metadata = { title: "Settings" };
 
 const selectClass = "h-8 rounded-lg border border-stone-300 bg-white px-2 text-sm";
 

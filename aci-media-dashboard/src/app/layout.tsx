@@ -7,7 +7,7 @@ import "./globals.css";
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "ACI Media Dashboard",
+  title: { default: "ACI Media Dashboard", template: "%s · ACI Media" },
   description: "Plan, spend, performance, digital, competitors and billing in one place",
 };
 

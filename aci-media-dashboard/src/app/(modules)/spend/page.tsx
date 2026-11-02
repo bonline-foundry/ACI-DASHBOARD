@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
@@ -7,15 +8,19 @@ import { FilterBar } from "@/components/data/filter-bar";
 import { EmptyState } from "@/components/data/empty-state";
 import { SourceTag } from "@/components/data/source-tag";
 import { UploadPanel } from "@/components/data/upload-panel";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatMillion } from "@/lib/money";
-import { addMonths, formatMonth, isMonth, todayDhaka } from "@/lib/month";
+import { addMonths, formatMonth, todayDhaka } from "@/lib/month";
 import { cn } from "@/lib/utils";
 import { listBrandsWithRivals, listTvStations, listVendors } from "@/server/master-data";
 import { listChannels } from "@/server/plan";
-import { CHANNEL_GROUPS, listSpendEntries, spendBreakdown, spendMatrix, type ChannelGroup } from "@/server/spend";
+import { parseSpendQuery } from "@/server/filters";
+import { listSpendEntries, spendBreakdown, spendMatrix, type ChannelGroup } from "@/server/spend";
 import { SpendEntries } from "./spend-entries";
+
+export const metadata: Metadata = { title: "Spend" };
 
 type Search = Promise<Record<string, string | string[] | undefined>>;
 
@@ -42,9 +47,7 @@ export default function SpendPage({ searchParams }: { searchParams: Search }) {
 async function SpendContent({ searchParams }: { searchParams: Search }) {
   await connection();
   const sp = await searchParams;
-  const month = typeof sp.month === "string" && isMonth(sp.month) ? sp.month : todayDhaka().slice(0, 7);
-  const brandId = typeof sp.brand === "string" && /^\d+$/.test(sp.brand) ? Number(sp.brand) : undefined;
-  const group = typeof sp.group === "string" && sp.group in CHANNEL_GROUPS ? (sp.group as ChannelGroup) : undefined;
+  const { month, brandId, group } = parseSpendQuery(sp, todayDhaka());
   const months = [-3, -2, -1, 0].map((n) => addMonths(month, n));
 
   const db = getDb();
@@ -56,17 +59,18 @@ async function SpendContent({ searchParams }: { searchParams: Search }) {
     spendBreakdown(db, { month, brandId, by: "vendor" }),
   ]);
   const brands = allBrands.filter((b) => b.active).map((b) => ({ id: b.id, name: b.name }));
-  const tabHref = (g: string) => {
-    const q = new URLSearchParams({ month, ...(brandId ? { brand: String(brandId) } : {}), ...(g ? { group: g } : {}) });
-    return `/spend?${q.toString()}`;
-  };
+  const query = (g: string) => new URLSearchParams({ month, ...(brandId ? { brand: String(brandId) } : {}), ...(g ? { group: g } : {}) }).toString();
+  const tabHref = (g: string) => `/spend?${query(g)}`;
   const latest = matrix.rows.reduce<string | null>((m, r) => (r.updatedAt && (!m || r.updatedAt > m) ? r.updatedAt : m), null);
   const sources = new Set(matrix.rows.map((r) => r.source));
   const overallSource = sources.size === 0 ? null : sources.size > 1 || sources.has("mixed") ? "mixed" : [...sources][0];
 
   return (
     <div className="space-y-6">
-      <FilterBar month={month} brands={brands} brandId={brandId} keep={group ? { group } : {}} />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <FilterBar month={month} brands={brands} brandId={brandId} keep={group ? { group } : {}} />
+        <a href={`/api/export/spend?${query(group ?? "")}`} download className={buttonVariants({ variant: "outline", size: "sm" })}>Export to Excel</a>
+      </div>
 
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">

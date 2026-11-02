@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
@@ -12,6 +13,8 @@ import { listCampaigns, listChannels, planVsBudget } from "@/server/plan";
 import { PlanBoard, type PlanView } from "./plan-board";
 import { BudgetPanel } from "./budget-panel";
 import { UploadPanel } from "@/components/data/upload-panel";
+
+export const metadata: Metadata = { title: "Plan" };
 
 type Search = Promise<Record<string, string | string[] | undefined>>;
 

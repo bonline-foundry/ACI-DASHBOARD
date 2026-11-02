@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
@@ -12,6 +13,8 @@ import { cn } from "@/lib/utils";
 import { homeData, UPCOMING_DAYS } from "@/server/home";
 import type { CampaignView } from "@/server/plan";
 import { RemindOverdueButton, ResolveReminderButton } from "./home-actions";
+
+export const metadata: Metadata = { title: "Home" };
 
 type Search = Promise<Record<string, string | string[] | undefined>>;
 

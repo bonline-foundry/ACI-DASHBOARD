@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { getDb } from "@/db/client";
@@ -14,6 +15,8 @@ import { cn } from "@/lib/utils";
 import { digitalSpendByBusiness, digitalSummary, listDigital, listDigitalPlatforms, type PlatformSummary } from "@/server/digital";
 import { listBrandsWithRivals } from "@/server/master-data";
 import { DigitalEntries } from "./digital-entries";
+
+export const metadata: Metadata = { title: "Digital Data" };
 
 type Search = Promise<Record<string, string | string[] | undefined>>;
 

@@ -1,22 +1,25 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { getDb } from "@/db/client";
 import { PageHeader } from "@/components/shell/page-header";
 import { UploadPanel } from "@/components/data/upload-panel";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BILL_STATUSES, BILL_STATUS_LABELS, type BillStatus } from "@/lib/bill-status";
+import { BILL_STATUSES, BILL_STATUS_LABELS } from "@/lib/bill-status";
 import { formatMillion, formatTaka } from "@/lib/money";
 import { todayDhaka } from "@/lib/month";
 import { cn } from "@/lib/utils";
-import { billSummary, listBills, type AgeFilter, type BillFilter } from "@/server/billing";
+import { billSummary, listBills, type AgeFilter } from "@/server/billing";
+import { parseBillFilter } from "@/server/filters";
 import { getThresholds, listBrandsWithRivals, listVendors } from "@/server/master-data";
 import { BillsTable } from "./bills-table";
 
+export const metadata: Metadata = { title: "Billing" };
+
 type Search = Promise<Record<string, string | string[] | undefined>>;
 
-const AGES: AgeFilter[] = ["fresh", "yellow", "red", "paid"];
 const selectClass = "h-8 rounded-lg border border-stone-300 bg-white px-2 text-sm";
 
 export default function BillingPage({ searchParams }: { searchParams: Search }) {
@@ -34,12 +37,9 @@ async function BillingContent({ searchParams }: { searchParams: Search }) {
   await connection();
   const sp = await searchParams;
   const today = todayDhaka();
-  const filter: BillFilter = {
-    search: typeof sp.q === "string" ? sp.q : undefined,
-    status: typeof sp.status === "string" && BILL_STATUSES.includes(sp.status as BillStatus) ? (sp.status as BillStatus) : undefined,
-    brandId: typeof sp.brand === "string" && /^\d+$/.test(sp.brand) ? Number(sp.brand) : undefined,
-    age: typeof sp.age === "string" && AGES.includes(sp.age as AgeFilter) ? (sp.age as AgeFilter) : undefined,
-  };
+  const filter = parseBillFilter(sp);
+  const exportQuery = new URLSearchParams(Object.entries({ q: filter.search, status: filter.status, brand: filter.brandId?.toString(), age: filter.age })
+    .filter((e): e is [string, string] => Boolean(e[1]))).toString();
   const filtered = Object.values(filter).some((v) => v !== undefined && v !== "");
 
   const db = getDb();
@@ -107,6 +107,7 @@ async function BillingContent({ searchParams }: { searchParams: Search }) {
         </select>
         <Button type="submit" variant="outline" size="sm">Apply</Button>
         {filtered && <Link href="/billing" className="text-sm text-stone-600 underline">Clear</Link>}
+        <a href={`/api/export/bills?${exportQuery}`} download className={buttonVariants({ variant: "outline", size: "sm" })}>Export to Excel</a>
         <span className="text-xs text-stone-500">{summary.unpaid.count} unpaid · {formatTaka(summary.unpaid.amount)} BDT with VAT</span>
       </form>
 

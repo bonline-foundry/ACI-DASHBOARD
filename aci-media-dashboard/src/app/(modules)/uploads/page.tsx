@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { getDb } from "@/db/client";
@@ -12,6 +13,8 @@ import { TEMPLATES } from "@/lib/upload/templates";
 import { cn } from "@/lib/utils";
 import { listHistory, listUploads } from "@/server/uploads";
 import { RestoreButton } from "./restore-button";
+
+export const metadata: Metadata = { title: "Uploads & History" };
 
 type Search = Promise<Record<string, string | string[] | undefined>>;
 

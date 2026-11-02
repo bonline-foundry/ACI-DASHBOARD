@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
@@ -21,6 +22,8 @@ import { AdLog } from "./ad-log";
 import { MediaEntries } from "./media-entries";
 import { SourcesTable } from "./sources-table";
 import { YoutubeSnapshot } from "./youtube-snapshot";
+
+export const metadata: Metadata = { title: "Competitor Tracking" };
 
 type Search = Promise<Record<string, string | string[] | undefined>>;
 
