@@ -6,7 +6,7 @@ function perfXlsx(brand: string): Buffer {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
     TEMPLATES.performance.columns.map((c) => c.header),
-    ["2026-10", brand, "Press", 300_000, 900_000, null, null, null, null, null],
+    ["2031-02", brand, "Press", 300_000, 900_000, null, null, null, null, null],
   ]), "Performance");
   return Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
 }
@@ -20,7 +20,7 @@ test("enter channel results, compare cost per 1,000 reached, upload more", async
   await page.getByRole("button", { name: "Add brand" }).click();
   await expect(page.getByTestId(`brand-${brand}`)).toBeVisible();
 
-  await page.goto("/performance?month=2026-10");
+  await page.goto("/performance?month=2031-02");
   const filters = page.getByRole("form", { name: "Filters" });
   await filters.getByLabel("Brand").selectOption({ label: brand });
   await filters.getByRole("button", { name: "Apply" }).click();
@@ -54,7 +54,7 @@ test("enter channel results, compare cost per 1,000 reached, upload more", async
   await panel.getByLabel("Choose Channel performance file").setInputFiles({
     name: `e2e-perf-${stamp}.xlsx`, mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", buffer: perfXlsx(brand),
   });
-  await expect(panel.getByRole("list", { name: "Upload checks" })).toContainText("October 2026");
+  await expect(panel.getByRole("list", { name: "Upload checks" })).toContainText("February 2031");
   await panel.getByRole("button", { name: "Confirm and save" }).click();
   await expect(page.getByText(/Saved as version \d+: 1 added/)).toBeVisible();
   await expect(page.getByTestId("reach-chart-PRESS")).toContainText("333 BDT");

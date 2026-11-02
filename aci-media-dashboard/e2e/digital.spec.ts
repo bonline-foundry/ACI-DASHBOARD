@@ -6,7 +6,7 @@ function digitalXlsx(brand: string): Buffer {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
     TEMPLATES.digital.columns.map((c) => c.header),
-    ["2026-10", brand, "YouTube", 20_000, 150_000, null, null, 40_000, 0.5, null],
+    ["2031-03", brand, "YouTube", 20_000, 150_000, null, null, 40_000, 0.5, null],
   ]), "Digital");
   return Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
 }
@@ -20,7 +20,7 @@ test("add Meta results by hand, block a duplicate, upload YouTube, delete", asyn
   await page.getByRole("button", { name: "Add brand" }).click();
   await expect(page.getByTestId(`brand-${brand}`)).toBeVisible();
 
-  await page.goto("/digital?month=2026-10");
+  await page.goto("/digital?month=2031-03");
   const filters = page.getByRole("form", { name: "Filters" });
   await filters.getByLabel("Brand").selectOption({ label: brand });
   await filters.getByRole("button", { name: "Apply" }).click();

@@ -6,7 +6,7 @@ function mediaXlsx(brand: string): Buffer {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
     TEMPLATES.competitor_media.columns.map((c) => c.header),
-    ["2026-10", brand, "Rival A", "TV", 1_000_000, 10, null],
+    ["2031-04", brand, "Rival A", "TV", 1_000_000, 10, null],
   ]), "Competitors");
   return Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
 }
@@ -25,7 +25,7 @@ test("compare a brand with its rivals, log an ad, save a YouTube snapshot and a 
     await expect(row.getByText(rival)).toBeVisible();
   }
 
-  await page.goto("/competitors?month=2026-10");
+  await page.goto("/competitors?month=2031-04");
   const filters = page.getByRole("form", { name: "Filters" });
   await filters.getByLabel("Brand").selectOption({ label: brand });
   await filters.getByRole("button", { name: "Apply" }).click();

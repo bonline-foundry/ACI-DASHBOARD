@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { createTestDb } from "@/db/test-db";
 import { seedReferenceData } from "@/db/seed";
 import type { Db } from "@/db/types";
-import { campaigns, competitorMedia, digitalEntries, historyLog, performanceEntries, spendEntries, tvStations, vendors } from "@/db/schema";
+import { bills, campaigns, competitorMedia, digitalEntries, historyLog, performanceEntries, spendEntries, tvStations, vendors } from "@/db/schema";
 import { TEMPLATES, type UploadKind } from "@/lib/upload/templates";
 import { addRival, createBrand, listBusinesses } from "./master-data";
 import { confirmUpload, listUploads, previewUpload, restoreUpload } from "./uploads";
@@ -207,5 +207,42 @@ describe("competitor media uploads", () => {
     ]) });
     expect(bad.ok).toBe(false);
     expect(bad.errors.map((e) => e.row)).toEqual([2, 3, 5]);
+  });
+});
+
+describe("bill uploads", () => {
+  // Bill no, PO no, Vendor, Brand, Month, Bill date, Amount, VAT, Status, Paid on, Note
+  it("reads status words, adds vendors, keeps manual bills and replaces the same bill no", async () => {
+    const oct = xlsx("bills", [
+      ["B-100", "PO-1", "Asiatic", "Savlon Soap", "2026-10", "2026-10-02", 500_000, 65_217, "Cheque in hand", null, null],
+      ["B-101", null, "Mindshare", null, "2026-10", "2026-10-09", 200_000, null, "paid", "2026-10-30", null],
+      ["B-102", null, "Asiatic", null, "2026-10", "2026-10-11", 90_000, null, null, null, "check VAT"],
+    ]);
+    expect((await confirmUpload(db, { kind: "bills", fileName: "oct.xlsx", data: oct, acceptMismatch: false })).inserted).toBe(3);
+    let rows = await db.select().from(bills);
+    expect(rows.map((r) => [r.billNo, r.status, r.paidAt]).sort()).toEqual([
+      ["B-100", "cheque_in_hand", null], ["B-101", "payment_done", "2026-10-30"], ["B-102", "unpaid", null],
+    ]);
+    expect((await db.select().from(vendors)).map((v) => v.name).sort()).toEqual(["Asiatic", "Mindshare"]);
+
+    await db.update(bills).set({ source: "manual", note: "kept" }).where(eq(bills.billNo, "B-102"));
+    // November file repeats B-100 (moved month) and B-102 (manual, so skipped)
+    const nov = xlsx("bills", [
+      ["b-100", null, "Asiatic", null, "2026-11", "2026-11-01", 510_000, null, "Unpaid", null, null],
+      ["B-102", null, "Asiatic", null, "2026-11", "2026-11-01", 1, null, null, null, null],
+    ]);
+    expect(await confirmUpload(db, { kind: "bills", fileName: "nov.xlsx", data: nov, acceptMismatch: false })).toMatchObject({ inserted: 1, skippedManual: 1 });
+    rows = await db.select().from(bills);
+    expect(rows.map((r) => [r.billNo, r.month, r.amount]).sort()).toEqual([
+      ["B-101", "2026-10", 200_000], ["B-102", "2026-10", 90_000], ["b-100", "2026-11", 510_000],
+    ]);
+
+    const bad = await previewUpload(db, { kind: "bills", fileName: "bad.xlsx", data: xlsx("bills", [
+      ["B-1", null, null, null, "2026-10", "2026-10-02", 10, null, "lost", null, null],
+      ["B-2", null, null, null, "2026-10", "2026-10-02", 10, 20, null, null, null],
+      ["B-3", null, null, null, "2026-10", "2026-10-02", 10, null, null, null, null],
+      ["b-3", null, null, null, "2026-10", "2026-10-02", 10, null, null, null, null],
+    ]) });
+    expect(bad.errors.map((e) => [e.row, e.column])).toEqual([[2, "Status"], [3, "Bill"], [5, "Bill no"]]);
   });
 });

@@ -1,6 +1,9 @@
 import { loadEnvConfig } from "@next/env";
 import { assertEnv } from "../src/db/assert-env";
 
+// Uploads replace every uploaded row of the months in the file, for all brands.
+// E2E files therefore use months in 2031 only (spend 01, performance 02, digital 03, competitors 04, bills 05),
+// so a test run never touches real or demo months.
 export default async function globalSetup() {
   loadEnvConfig(process.cwd());
   assertEnv(process.env);

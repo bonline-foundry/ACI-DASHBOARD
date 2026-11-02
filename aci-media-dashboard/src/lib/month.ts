@@ -45,3 +45,8 @@ export function daysInMonth(month: string): number {
 export function monthBounds(month: string): { start: string; end: string } {
   return { start: `${month}-01`, end: `${month}-${String(daysInMonth(month)).padStart(2, "0")}` };
 }
+
+export function addDays(date: string, n: number): string {
+  const [y, m, d] = date.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+}

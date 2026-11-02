@@ -6,8 +6,8 @@ function spendXlsx(brand: string, station: string, total: number): Buffer {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
     TEMPLATES.spend.columns.map((c) => c.header),
-    ["2026-10", null, brand, "TV", station, null, 3_000_000, null],
-    ["2026-10", null, brand, "Facebook", null, null, 1_000_000, null],
+    ["2031-01", null, brand, "TV", station, null, 3_000_000, null],
+    ["2031-01", null, brand, "Facebook", null, null, 1_000_000, null],
     ["TOTAL", null, null, null, null, null, total, null],
   ]), "Spend");
   return Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
@@ -24,13 +24,13 @@ test("upload spend with a total mismatch, see it everywhere, block duplicates, a
   await page.getByRole("button", { name: "Add brand" }).click();
   await expect(page.getByTestId(`brand-${brand}`)).toBeVisible();
 
-  await page.goto("/spend?month=2026-10");
+  await page.goto("/spend?month=2031-01");
   await page.waitForLoadState("networkidle");
   const panel = page.getByTestId("upload-spend");
   await panel.getByLabel("Choose Media spend file").setInputFiles(file);
   const checks = panel.getByRole("list", { name: "Upload checks" });
   await expect(checks).toContainText("Month found");
-  await expect(checks).toContainText("October 2026");
+  await expect(checks).toContainText("January 2031");
   await expect(checks).toContainText("Totals differ by 7,00,000 BDT");
   await expect(checks).toContainText(station);
 
@@ -61,7 +61,7 @@ test("upload spend with a total mismatch, see it everywhere, block duplicates, a
   await expect(matrixRow).toContainText("4.50");
 
   // Actual spend flows into the Plan budget table
-  await page.goto("/plan?month=2026-10");
+  await page.goto("/plan?month=2031-01");
   await expect(page.getByTestId(`budget-${brand}`)).toContainText("4.50");
 
   // Uploads page shows the version and the history
