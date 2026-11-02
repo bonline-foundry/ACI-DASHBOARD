@@ -11,6 +11,7 @@ import { listBrandsWithRivals } from "@/server/master-data";
 import { listCampaigns, listChannels, planVsBudget } from "@/server/plan";
 import { PlanBoard, type PlanView } from "./plan-board";
 import { BudgetPanel } from "./budget-panel";
+import { UploadPanel } from "@/components/data/upload-panel";
 
 type Search = Promise<Record<string, string | string[] | undefined>>;
 
@@ -85,6 +86,8 @@ async function PlanContent({ searchParams }: { searchParams: Search }) {
       />
 
       {shownBrands.length > 0 && <BudgetPanel month={month} rows={budgetRows} />}
+
+      <UploadPanel kind="plan" />
     </div>
   );
 }
