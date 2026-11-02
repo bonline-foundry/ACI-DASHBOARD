@@ -11,3 +11,6 @@ test-results/
 .env*
 !.env.example
 .claude/settings.local.json
+
+# Live demo output (generated Excel files and exports)
+demo-files/

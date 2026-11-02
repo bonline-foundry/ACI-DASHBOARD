@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { CalendarPlus, ChevronDown, FileDown, Plus, ReceiptText, Wallet } from "lucide-react";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 // Every action opens something that already works (the page opens its dialog from ?new=…).
@@ -32,13 +32,16 @@ export function QuickActions() {
         <ChevronDown className="size-4 text-gray-500" aria-hidden />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
-        <DropdownMenuLabel>Create</DropdownMenuLabel>
-        {ACTIONS.map((a) => (
-          <DropdownMenuItem key={a.href} onClick={() => router.push(a.href)}>
-            <a.icon aria-hidden />
-            {a.label}
-          </DropdownMenuItem>
-        ))}
+        {/* Base UI requires a group label to sit inside a group. */}
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Create</DropdownMenuLabel>
+          {ACTIONS.map((a) => (
+            <DropdownMenuItem key={a.href} onClick={() => router.push(a.href)}>
+              <a.icon aria-hidden />
+              {a.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={downloadBills}>
           <FileDown aria-hidden />
