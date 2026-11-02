@@ -57,7 +57,8 @@ export async function homeData(db: Db, q: { today: string; month: string }) {
     });
   }
   for (const u of recentUploads) {
-    if (u.controlTotal === null || u.controlTotal === u.rowsTotal || dayDiff(u.createdAt, q.today) > UPLOAD_REVIEW_DAYS) continue;
+    // Same tolerance as the upload check: under 1 taka apart counts as matching.
+    if (u.controlTotal === null || Math.abs(u.controlTotal - u.rowsTotal) < 1 || dayDiff(u.createdAt, q.today) > UPLOAD_REVIEW_DAYS) continue;
     alerts.push({ level: "orange", href: "/uploads", text: `Upload "${u.fileName}" was saved with totals that did not match. Check it.` });
   }
   for (const s of sources) {

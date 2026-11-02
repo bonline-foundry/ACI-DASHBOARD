@@ -27,7 +27,7 @@ ACI Media Dashboard Deep Research.pdf, ACI Media Dashboard User Flow and Wirefra
 
 ## Run it locally
 
-Requirements: Node.js 20 or newer, a Neon Postgres database.
+Requirements: Node.js 22.12 or newer (the test runner needs it), a Neon Postgres database.
 
 ```bash
 cd aci-media-dashboard

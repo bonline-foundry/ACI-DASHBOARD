@@ -78,6 +78,13 @@ describe("confirmUpload", () => {
     await expect(confirmUpload(db, { kind: "spend", fileName: "copy.xlsx", data: spendFile(), acceptMismatch: false })).rejects.toThrow(/already uploaded/);
   });
 
+  it("saves a TOTAL row with decimals (VAT) by rounding it to whole taka", async () => {
+    const res = await confirmUpload(db, { kind: "spend", fileName: "vat.xlsx", data: spendFile(4_430_000, 5_430_000.4), acceptMismatch: false });
+    expect(res.inserted).toBe(2);
+    const [up] = await listUploads(db);
+    expect(up).toMatchObject({ controlTotal: 5_430_000, rowsTotal: 5_430_000 });
+  });
+
   it("requires accepting a total mismatch", async () => {
     const data = spendFile(4_430_000, 9_999_999);
     await expect(confirmUpload(db, { kind: "spend", fileName: "o.xlsx", data, acceptMismatch: false })).rejects.toThrow(/Totals differ/);

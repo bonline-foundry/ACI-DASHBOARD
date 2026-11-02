@@ -174,7 +174,9 @@ export async function confirmUpload(
     const tx = txRaw as unknown as Db;
     const [up] = await tx.insert(uploads).values({
       kind: input.kind, fileName: input.fileName, fileHash: preview.fileHash, periods: preview.periods, rowCount: preview.rowCount,
-      controlTotal: preview.totals.controlTotal, rowsTotal: Math.round(preview.totals.rowsTotal), rows: parsed.rows.map((r) => r.values),
+      // Money columns hold whole taka; a TOTAL row with VAT decimals is rounded like the rows are.
+      controlTotal: preview.totals.controlTotal === null ? null : Math.round(preview.totals.controlTotal),
+      rowsTotal: Math.round(preview.totals.rowsTotal), rows: parsed.rows.map((r) => r.values),
     }).returning({ id: uploads.id });
     await supersedeOverlapping(tx, input.kind, preview.periods, up.id);
     const res = await applySnapshot(tx, applier, parsed.rows, preview.periods, up.id);
