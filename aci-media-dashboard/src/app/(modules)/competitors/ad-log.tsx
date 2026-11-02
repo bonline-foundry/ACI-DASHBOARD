@@ -22,7 +22,7 @@ const TEXT_FIELDS = [
   { key: "visualStyle", label: "Visual style" },
   { key: "tone", label: "Tone" },
 ] as const;
-const selectClass = "h-8 w-full rounded-lg border border-stone-300 bg-white px-2 text-sm";
+const selectClass = "h-9 w-full rounded-lg border border-gray-300 bg-white px-2 text-sm";
 
 export function AdLog({ brandId, rows, rivals }: { brandId: number; rows: CompetitorAdView[]; rivals: Rival[] }) {
   const [open, setOpen] = useState(false);
@@ -48,10 +48,10 @@ export function AdLog({ brandId, rows, rivals }: { brandId: number; rows: Compet
       <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
         <CardTitle>Meta and TikTok ad log</CardTitle>
         <div className="flex items-center gap-2">
-          <div role="group" aria-label="Ad platform" className="flex gap-1 rounded-lg bg-stone-200/60 p-1">
+          <div role="group" aria-label="Ad platform" className="flex gap-1 rounded-lg bg-gray-200/60 p-1">
             {(["", ...PLATFORMS] as const).map((p) => (
               <button key={p || "all"} type="button" aria-pressed={platform === p} onClick={() => setPlatform(p)}
-                className={cn("rounded-md px-3 py-1 text-sm", platform === p ? "bg-white font-medium shadow-sm" : "text-stone-600")}>
+                className={cn("rounded-md px-3 py-1 text-sm", platform === p ? "bg-white font-medium shadow-sm" : "text-gray-600")}>
                 {p || "All"}
               </button>
             ))}
@@ -83,7 +83,7 @@ export function AdLog({ brandId, rows, rivals }: { brandId: number; rows: Compet
                     <TableCell>{r.cta ?? "–"}</TableCell>
                     <TableCell>{[r.visualStyle, r.tone].filter(Boolean).join(" · ") || "–"}</TableCell>
                     <TableCell>
-                      {r.adUrl ? <a href={r.adUrl} target="_blank" rel="noopener noreferrer" className="text-teal-700 underline">Open</a> : "–"}
+                      {r.adUrl ? <a href={r.adUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline">Open</a> : "–"}
                     </TableCell>
                     <TableCell className="space-x-1 text-right whitespace-nowrap">
                       <Button size="sm" variant="ghost" onClick={() => edit(r)}>Edit</Button>
@@ -95,7 +95,7 @@ export function AdLog({ brandId, rows, rivals }: { brandId: number; rows: Compet
             </Table>
           </div>
         )}
-        <p className="mt-2 text-xs text-stone-500">Links only. Screenshots and video files are not stored.</p>
+        <p className="mt-2 text-xs text-gray-500">Links only. Screenshots and video files are not stored.</p>
       </CardContent>
 
       <Dialog open={open} onOpenChange={setOpen}>

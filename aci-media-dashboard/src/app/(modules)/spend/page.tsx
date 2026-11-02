@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { Download } from "lucide-react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { getDb } from "@/db/client";
@@ -8,6 +9,7 @@ import { FilterBar } from "@/components/data/filter-bar";
 import { EmptyState } from "@/components/data/empty-state";
 import { SourceTag } from "@/components/data/source-tag";
 import { UploadPanel } from "@/components/data/upload-panel";
+import { StatCard, StatGrid } from "@/components/data/stat-card";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -19,6 +21,7 @@ import { listChannels } from "@/server/plan";
 import { parseSpendQuery } from "@/server/filters";
 import { listSpendEntries, spendBreakdown, spendMatrix, type ChannelGroup } from "@/server/spend";
 import { SpendEntries } from "./spend-entries";
+import { PageSkeleton } from "@/components/data/page-skeleton";
 
 export const metadata: Metadata = { title: "Spend" };
 
@@ -37,7 +40,7 @@ export default function SpendPage({ searchParams }: { searchParams: Search }) {
   return (
     <>
       <PageHeader title="Spend" subtitle="What was spent, by brand, month and media" />
-      <Suspense fallback={<p className="text-sm text-stone-500">Loading spend…</p>}>
+      <Suspense fallback={<PageSkeleton label="Loading spend" />}>
         <SpendContent searchParams={searchParams} />
       </Suspense>
     </>
@@ -61,6 +64,10 @@ async function SpendContent({ searchParams }: { searchParams: Search }) {
   const brands = allBrands.filter((b) => b.active).map((b) => ({ id: b.id, name: b.name }));
   const query = (g: string) => new URLSearchParams({ month, ...(brandId ? { brand: String(brandId) } : {}), ...(g ? { group: g } : {}) }).toString();
   const tabHref = (g: string) => `/spend?${query(g)}`;
+  const prev = months[2];
+  const monthTotal = matrix.totals[month] ?? 0;
+  const prevTotal = matrix.totals[prev] ?? 0;
+  const change = prevTotal ? ((monthTotal - prevTotal) / prevTotal) * 100 : null;
   const latest = matrix.rows.reduce<string | null>((m, r) => (r.updatedAt && (!m || r.updatedAt > m) ? r.updatedAt : m), null);
   const sources = new Set(matrix.rows.map((r) => r.source));
   const overallSource = sources.size === 0 ? null : sources.size > 1 || sources.has("mixed") ? "mixed" : [...sources][0];
@@ -69,16 +76,29 @@ async function SpendContent({ searchParams }: { searchParams: Search }) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <FilterBar month={month} brands={brands} brandId={brandId} keep={group ? { group } : {}} />
-        <a href={`/api/export/spend?${query(group ?? "")}`} download className={buttonVariants({ variant: "outline", size: "sm" })}>Export to Excel</a>
+        <a href={`/api/export/spend?${query(group ?? "")}`} download className={buttonVariants({ variant: "secondary", size: "sm" })}><Download aria-hidden />Export to Excel</a>
       </div>
+
+      <StatGrid>
+        <StatCard label={`Spend in ${formatMonth(month)}`} value={`${formatMillion(monthTotal)}M`} tone="accent" testId="kpi-month-spend"
+          note={group ? `${GROUP_TABS.find((t) => t.key === group)?.label} only · BDT with VAT` : "All media · BDT with VAT"} />
+        <StatCard label={`Change vs ${formatMonth(prev)}`} testId="kpi-change"
+          value={change === null ? "–" : `${change >= 0 ? "+" : "−"}${Math.abs(change).toFixed(1)}%`}
+          tone="neutral"
+          note={prevTotal ? `${formatMillion(prevTotal)}M last month` : "No spend last month"} />
+        <StatCard label="Brands with spend" value={matrix.rows.filter((r) => (r.cells[month] ?? 0) > 0).length} testId="kpi-brands"
+          note={`of ${brands.length} active brands`} />
+        <StatCard label="Entries this month" value={entries.length} testId="kpi-entries"
+          note={`${entries.filter((e) => e.source === "manual").length} manual · ${entries.filter((e) => e.source === "upload").length} uploaded`} />
+      </StatGrid>
 
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
           <CardTitle>Spend by brand and month (million BDT, with VAT)</CardTitle>
-          <nav aria-label="Media" className="flex flex-wrap gap-1 rounded-lg bg-stone-200/60 p-1">
+          <nav aria-label="Media" className="flex flex-wrap gap-1 rounded-lg bg-gray-200/60 p-1">
             {GROUP_TABS.map((t) => (
               <Link key={t.key} href={tabHref(t.key)} aria-current={(group ?? "") === t.key ? "page" : undefined}
-                className={cn("rounded-md px-3 py-1 text-sm", (group ?? "") === t.key ? "bg-white font-medium shadow-sm" : "text-stone-600")}>
+                className={cn("rounded-md px-3 py-1 text-sm", (group ?? "") === t.key ? "bg-white font-medium shadow-sm" : "text-gray-600")}>
                 {t.label}
               </Link>
             ))}
@@ -150,13 +170,13 @@ function Breakdown({ title, rows, empty }: { title: string; rows: { name: string
       <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
       <CardContent>
         {rows.length === 0 ? (
-          <p className="text-sm text-stone-500">{empty}</p>
+          <p className="text-sm text-gray-500">{empty}</p>
         ) : (
           <ul className="space-y-2">
             {rows.map((r) => (
               <li key={r.name} className="text-sm">
                 <div className="flex justify-between"><span>{r.name}</span><span className="tabular-nums">{formatMillion(r.amount)}M</span></div>
-                <div className="mt-1 h-1.5 rounded bg-stone-100"><div className="h-1.5 rounded bg-teal-600" style={{ width: `${(r.amount / max) * 100}%` }} /></div>
+                <div className="mt-1 h-1.5 rounded bg-gray-100"><div className="h-1.5 rounded bg-primary" style={{ width: `${(r.amount / max) * 100}%` }} /></div>
               </li>
             ))}
           </ul>

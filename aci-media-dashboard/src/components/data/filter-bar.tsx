@@ -19,13 +19,13 @@ export function FilterBar({
       {Object.entries(keep).map(([k, v]) => (
         <input key={k} type="hidden" name={k} value={v} />
       ))}
-      <label className="flex items-center gap-1 text-sm text-stone-600">
+      <label className="flex items-center gap-1 text-sm text-gray-600">
         Month
-        <input type="month" name="month" defaultValue={month} className="h-8 rounded-lg border border-stone-300 bg-white px-2 text-sm" />
+        <input type="month" name="month" defaultValue={month} className="h-9 rounded-lg border border-gray-300 bg-white px-2 text-sm" />
       </label>
-      <label className="flex items-center gap-1 text-sm text-stone-600">
+      <label className="flex items-center gap-1 text-sm text-gray-600">
         Brand
-        <select name="brand" defaultValue={brandId ? String(brandId) : ""} className="h-8 rounded-lg border border-stone-300 bg-white px-2 text-sm">
+        <select name="brand" defaultValue={brandId ? String(brandId) : ""} className="h-9 rounded-lg border border-gray-300 bg-white px-2 text-sm">
           {allowAll && <option value="">All brands</option>}
           {brands.map((b) => (
             <option key={b.id} value={b.id}>{b.name}</option>
@@ -33,7 +33,7 @@ export function FilterBar({
         </select>
       </label>
       <Button type="submit" variant="outline" size="sm">Apply</Button>
-      <span className="text-xs text-stone-500">Costs with VAT</span>
+      <span className="text-xs text-gray-500">Costs with VAT</span>
     </form>
   );
 }

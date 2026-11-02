@@ -1,32 +1,34 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { Download } from "lucide-react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { getDb } from "@/db/client";
 import { PageHeader } from "@/components/shell/page-header";
 import { UploadPanel } from "@/components/data/upload-panel";
+import { StatCard, StatGrid, type StatTone } from "@/components/data/stat-card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BILL_STATUSES, BILL_STATUS_LABELS } from "@/lib/bill-status";
 import { formatMillion, formatTaka } from "@/lib/money";
 import { todayDhaka } from "@/lib/month";
-import { cn } from "@/lib/utils";
 import { billSummary, listBills, type AgeFilter } from "@/server/billing";
 import { parseBillFilter } from "@/server/filters";
 import { getThresholds, listBrandsWithRivals, listVendors } from "@/server/master-data";
 import { BillsTable } from "./bills-table";
+import { PageSkeleton } from "@/components/data/page-skeleton";
 
 export const metadata: Metadata = { title: "Billing" };
 
 type Search = Promise<Record<string, string | string[] | undefined>>;
 
-const selectClass = "h-8 rounded-lg border border-stone-300 bg-white px-2 text-sm";
+const selectClass = "h-9 rounded-lg border border-gray-300 bg-white px-2 text-sm";
 
 export default function BillingPage({ searchParams }: { searchParams: Search }) {
   return (
     <>
       <PageHeader title="Billing" subtitle="Unpaid media bills, payment status and reminders" />
-      <Suspense fallback={<p className="text-sm text-stone-500">Loading bills…</p>}>
+      <Suspense fallback={<PageSkeleton label="Loading bills" />}>
         <BillingContent searchParams={searchParams} />
       </Suspense>
     </>
@@ -47,34 +49,32 @@ async function BillingContent({ searchParams }: { searchParams: Search }) {
     getThresholds(db), billSummary(db, today), listBills(db, today, filter), listBills(db, today, { age: "red" }),
     listBrandsWithRivals(db), listVendors(db),
   ]);
-  const counters: { age: AgeFilter; label: string; count: number; amount: number; tone: string }[] = [
-    { age: "fresh", label: `0–${t.billYellowDays - 1} days`, ...summary.fresh, tone: "border-stone-200" },
-    { age: "yellow", label: `${t.billYellowDays}–${t.billRedDays - 1} days`, ...summary.yellow, tone: "border-amber-300 bg-amber-50/60" },
-    { age: "red", label: `${t.billRedDays}+ days`, ...summary.red, tone: "border-red-300 bg-red-50/60" },
-    { age: "paid", label: "Paid this month", ...summary.paidThisMonth, tone: "border-emerald-300 bg-emerald-50/60" },
+  const counters: { age: AgeFilter; label: string; count: number; amount: number; tone: StatTone }[] = [
+    { age: "fresh", label: `0–${t.billYellowDays - 1} days`, ...summary.fresh, tone: "neutral" },
+    { age: "yellow", label: `${t.billYellowDays}–${t.billRedDays - 1} days`, ...summary.yellow, tone: "warn" },
+    { age: "red", label: `${t.billRedDays}+ days`, ...summary.red, tone: "bad" },
+    { age: "paid", label: "Paid this month", ...summary.paidThisMonth, tone: "good" },
   ];
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-testid="bill-counters">
-        {counters.map((c) => (
-          <Link key={c.age} href={`/billing?age=${c.age}`} data-testid={`counter-${c.age}`}
-            className={cn("rounded-xl border bg-white p-4 transition-colors hover:border-stone-400", c.tone, filter.age === c.age && "ring-2 ring-stone-800")}>
-            <p className="text-sm text-stone-600">{c.label}</p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums">{c.count}</p>
-            <p className="text-xs text-stone-500 tabular-nums">{formatMillion(c.amount)}M BDT</p>
-          </Link>
-        ))}
+      <div data-testid="bill-counters">
+        <StatGrid>
+          {counters.map((c) => (
+            <StatCard key={c.age} href={`/billing?age=${c.age}`} testId={`counter-${c.age}`} label={c.label} value={c.count}
+              note={`${formatMillion(c.amount)}M BDT`} tone={c.tone} active={filter.age === c.age} />
+          ))}
+        </StatGrid>
       </div>
 
       {allRed.length > 0 && (
         <Card className="border-red-200">
           <CardHeader>
             <CardTitle>Check these bills</CardTitle>
-            <p className="text-xs text-stone-500">Unpaid for {t.billRedDays} days or more. Follow up with the vendor or finance.</p>
+            <p className="text-xs text-gray-500">Unpaid for {t.billRedDays} days or more. Follow up with the vendor or finance.</p>
           </CardHeader>
           <CardContent>
-            <ul className="divide-y divide-stone-100 text-sm" data-testid="check-these-bills">
+            <ul className="divide-y divide-gray-100 text-sm" data-testid="check-these-bills">
               {allRed.slice(0, 8).map((b) => (
                 <li key={b.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                   <span><span className="font-medium">{b.billNo}</span> · {b.vendorName ?? "No vendor"}{b.brandName ? ` · ${b.brandName}` : ""}</span>
@@ -82,14 +82,14 @@ async function BillingContent({ searchParams }: { searchParams: Search }) {
                 </li>
               ))}
             </ul>
-            {allRed.length > 8 && <Link href="/billing?age=red" className="mt-2 inline-block text-sm text-teal-700 underline">See all {allRed.length}</Link>}
+            {allRed.length > 8 && <Link href="/billing?age=red" className="mt-2 inline-block text-sm text-primary underline">See all {allRed.length}</Link>}
           </CardContent>
         </Card>
       )}
 
       <form method="get" aria-label="Bill filters" className="flex flex-wrap items-center gap-2">
         <input name="q" defaultValue={filter.search ?? ""} placeholder="Search bill no, PO, vendor, note" aria-label="Search bills"
-          className="h-8 w-64 rounded-lg border border-stone-300 bg-white px-2 text-sm" />
+          className="h-9 w-64 rounded-lg border border-gray-300 bg-white px-2 text-sm" />
         <select name="status" aria-label="Status" defaultValue={filter.status ?? ""} className={selectClass}>
           <option value="">Any status</option>
           {BILL_STATUSES.map((s) => <option key={s} value={s}>{BILL_STATUS_LABELS[s]}</option>)}
@@ -106,9 +106,9 @@ async function BillingContent({ searchParams }: { searchParams: Search }) {
           <option value="paid">Paid</option>
         </select>
         <Button type="submit" variant="outline" size="sm">Apply</Button>
-        {filtered && <Link href="/billing" className="text-sm text-stone-600 underline">Clear</Link>}
-        <a href={`/api/export/bills?${exportQuery}`} download className={buttonVariants({ variant: "outline", size: "sm" })}>Export to Excel</a>
-        <span className="text-xs text-stone-500">{summary.unpaid.count} unpaid · {formatTaka(summary.unpaid.amount)} BDT with VAT</span>
+        {filtered && <Link href="/billing" className="text-sm text-gray-600 underline">Clear</Link>}
+        <a href={`/api/export/bills?${exportQuery}`} download className={buttonVariants({ variant: "secondary", size: "sm" })}><Download aria-hidden />Export to Excel</a>
+        <span className="text-xs text-gray-500">{summary.unpaid.count} unpaid · {formatTaka(summary.unpaid.amount)} BDT with VAT</span>
       </form>
 
       <BillsTable rows={rows} filtered={filtered} month={today.slice(0, 7)}

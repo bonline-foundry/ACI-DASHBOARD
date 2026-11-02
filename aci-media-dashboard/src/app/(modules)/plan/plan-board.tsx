@@ -16,7 +16,7 @@ import { CampaignDialog } from "./campaign-dialog";
 export type PlanView = "timeline" | "calendar" | "list";
 type Option = { id: number; name: string };
 
-const STATUS_CLASS = { planned: "bg-stone-100 text-stone-700", live: "bg-emerald-100 text-emerald-800", done: "bg-sky-100 text-sky-800" };
+const STATUS_CLASS = { planned: "bg-gray-100 text-gray-700", live: "bg-emerald-100 text-emerald-800", done: "bg-sky-100 text-sky-800" };
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const colorOf = (c: CampaignView) => CHANNEL_COLORS[mainChannel(c.lines) ?? ""] ?? FALLBACK_COLOR;
@@ -86,7 +86,7 @@ export function PlanBoard({
 function Legend() {
   const items: [string, string][] = [["TV", "TV"], ["PRESS", "Press"], ["RADIO", "Radio"], ["OOH", "OOH"], ["META", "Meta"], ["YOUTUBE", "YouTube"], ["TIKTOK", "TikTok"], ["DIGITAL", "Digital"]];
   return (
-    <ul className="flex flex-wrap gap-3 text-xs text-stone-600" aria-label="Channel colours">
+    <ul className="flex flex-wrap gap-3 text-xs text-gray-600" aria-label="Channel colours">
       {items.map(([code, label]) => (
         <li key={code} className="flex items-center gap-1">
           <span className={cn("inline-block size-3 rounded-sm", CHANNEL_COLORS[code])} />
@@ -106,13 +106,13 @@ function Timeline({
   const LANE = 30;
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-stone-200 bg-white" data-testid="plan-timeline">
+    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white" data-testid="plan-timeline">
       <div className="min-w-[900px]">
-        <div className="flex border-b border-stone-200 text-[11px] text-stone-500">
+        <div className="flex border-b border-gray-200 text-[11px] text-gray-500">
           <div className="w-40 shrink-0 px-3 py-2 font-medium">Brand</div>
           <div className="relative flex flex-1">
             {Array.from({ length: days }, (_, i) => (
-              <div key={i} className={cn("flex-1 py-2 text-center", todayOffset === i && "font-semibold text-stone-900")}>{i + 1}</div>
+              <div key={i} className={cn("flex-1 py-2 text-center", todayOffset === i && "font-semibold text-gray-900")}>{i + 1}</div>
             ))}
           </div>
         </div>
@@ -121,8 +121,8 @@ function Timeline({
           const lanes = assignLanes(own.map((c) => ({ id: c.id, start: c.startDate, end: c.endDate })));
           const laneCount = Math.max(1, ...[...lanes.values()].map((l) => l + 1));
           return (
-            <div key={b.id} className="flex border-b border-stone-100 last:border-b-0">
-              <div className="w-40 shrink-0 px-3 py-2 text-sm font-medium text-stone-800">{b.name}</div>
+            <div key={b.id} className="flex border-b border-gray-100 last:border-b-0">
+              <div className="w-40 shrink-0 px-3 py-2 text-sm font-medium text-gray-800">{b.name}</div>
               <div className="relative flex-1" style={{ height: laneCount * LANE + 8 }}>
                 {todayOffset !== null && (
                   <div aria-hidden className="absolute inset-y-0 w-px bg-red-400" style={{ left: pct(todayOffset + 0.5) }} />
@@ -164,16 +164,16 @@ function Calendar({
   while (cells.length % 7) cells.push(null);
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-stone-200 bg-white" data-testid="plan-calendar">
+    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white" data-testid="plan-calendar">
       <div className="grid min-w-[700px] grid-cols-7">
-        {WEEKDAYS.map((d) => <div key={d} className="border-b border-stone-200 px-2 py-1 text-xs font-medium text-stone-500">{d}</div>)}
+        {WEEKDAYS.map((d) => <div key={d} className="border-b border-gray-200 px-2 py-1 text-xs font-medium text-gray-500">{d}</div>)}
         {cells.map((date, i) => {
           const on = date ? campaigns.filter((c) => c.startDate <= date && c.endDate >= date) : [];
           return (
-            <div key={i} className={cn("min-h-24 border-b border-r border-stone-100 p-1", !date && "bg-stone-50")}>
+            <div key={i} className={cn("min-h-24 border-b border-r border-gray-100 p-1", !date && "bg-gray-50")}>
               {date && (
                 <>
-                  <p className={cn("text-xs text-stone-500", date === today && "font-semibold text-red-600")}>{Number(date.slice(8))}</p>
+                  <p className={cn("text-xs text-gray-500", date === today && "font-semibold text-red-600")}>{Number(date.slice(8))}</p>
                   <div className="mt-1 space-y-0.5">
                     {on.slice(0, 3).map((c) => (
                       <button key={c.id} type="button" onClick={() => onSelect(c)}
@@ -181,7 +181,7 @@ function Calendar({
                         {c.brandName}: {c.name}
                       </button>
                     ))}
-                    {on.length > 3 && <p className="text-[11px] text-stone-500">+{on.length - 3} more</p>}
+                    {on.length > 3 && <p className="text-[11px] text-gray-500">+{on.length - 3} more</p>}
                   </div>
                 </>
               )}
@@ -196,7 +196,7 @@ function Calendar({
 function List({ campaigns, onSelect }: { campaigns: CampaignView[]; onSelect: (c: CampaignView) => void }) {
   if (campaigns.length === 0) return null;
   return (
-    <div className="rounded-lg border border-stone-200 bg-white" data-testid="plan-list">
+    <div className="rounded-lg border border-gray-200 bg-white" data-testid="plan-list">
       <Table>
         <TableHeader>
           <TableRow>

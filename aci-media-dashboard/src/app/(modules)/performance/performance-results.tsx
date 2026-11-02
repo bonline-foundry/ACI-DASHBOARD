@@ -27,7 +27,7 @@ const TV_INPUTS = [
 
 type RowState = { spend: string; peopleReached: string } & Record<(typeof TV_INPUTS)[number]["key"], string>;
 
-const selectClass = "h-8 rounded-lg border border-stone-300 bg-white px-2 text-sm";
+const selectClass = "h-9 rounded-lg border border-gray-300 bg-white px-2 text-sm";
 const text = (v: number | null | undefined) => (v === null || v === undefined ? "" : String(v));
 
 export function PerformanceResults({
@@ -68,7 +68,7 @@ export function PerformanceResults({
                     <TableCell className="text-right tabular-nums">{r.peopleReached === null ? "–" : formatCount(r.peopleReached)}</TableCell>
                     <TableCell className="text-right tabular-nums">{r.costPer1000 === null ? "No data" : formatTaka(r.costPer1000)}</TableCell>
                     <TableCell>
-                      <span className={cn("rounded-full px-2 py-0.5 text-xs", r.source === "manual" ? "bg-violet-100 text-violet-800" : "bg-stone-100 text-stone-700")}>
+                      <span className={cn("rounded-full px-2 py-0.5 text-xs", r.source === "manual" ? "bg-violet-100 text-violet-800" : "bg-gray-100 text-gray-700")}>
                         {r.source === "manual" ? "Manual edit" : "Uploaded"}
                       </span>
                     </TableCell>
@@ -79,7 +79,7 @@ export function PerformanceResults({
             </Table>
           </div>
         )}
-        <p className="mt-2 text-xs text-stone-500">Saving the form turns a brand&apos;s rows into manual edits. Manual edits are kept when the month is uploaded again.</p>
+        <p className="mt-2 text-xs text-gray-500">Saving the form turns a brand&apos;s rows into manual edits. Manual edits are kept when the month is uploaded again.</p>
       </CardContent>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -145,7 +145,7 @@ function ResultsForm({
       <div className="max-h-[50vh] overflow-y-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-stone-500">
+            <tr className="text-left text-gray-500">
               <th className="py-1 font-normal">Channel</th>
               <th className="py-1 font-normal">Spend (BDT, with VAT)</th>
               <th className="py-1 font-normal">People reached</th>
@@ -163,8 +163,8 @@ function ResultsForm({
         </table>
       </div>
       {tv && (
-        <fieldset className="rounded-lg border border-stone-200 p-3">
-          <legend className="px-1 text-sm text-stone-600">TV numbers (optional)</legend>
+        <fieldset className="rounded-lg border border-gray-200 p-3">
+          <legend className="px-1 text-sm text-gray-600">TV numbers (optional)</legend>
           <div className="grid gap-2 sm:grid-cols-3">
             {TV_INPUTS.map((t) => (
               <label key={t.key} className="flex flex-col gap-1 text-sm">{t.label}
@@ -174,7 +174,7 @@ function ResultsForm({
           </div>
         </fieldset>
       )}
-      <p className="text-xs text-stone-500">Leave a channel blank to remove it for this month.</p>
+      <p className="text-xs text-gray-500">Leave a channel blank to remove it for this month.</p>
       {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
       <DialogFooter>
         <Button onClick={save} disabled={pending}>{pending ? "Saving…" : "Save results"}</Button>

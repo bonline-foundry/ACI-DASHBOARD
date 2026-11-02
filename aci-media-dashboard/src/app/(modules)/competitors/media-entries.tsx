@@ -17,7 +17,7 @@ import { deleteMediaAction, saveMediaAction } from "./actions";
 export type Subject = { rivalId: number | null; name: string };
 
 const MEDIA = ["TV", "Press", "Radio"] as const;
-const selectClass = "h-8 w-full rounded-lg border border-stone-300 bg-white px-2 text-sm";
+const selectClass = "h-9 w-full rounded-lg border border-gray-300 bg-white px-2 text-sm";
 const subjectValue = (rivalId: number | null) => (rivalId === null ? "own" : String(rivalId));
 
 export function MediaEntries({ brandId, month, rows, subjects }: { brandId: number; month: string; rows: CompetitorMediaView[]; subjects: Subject[] }) {
@@ -65,7 +65,7 @@ export function MediaEntries({ brandId, month, rows, subjects }: { brandId: numb
                     <TableCell className="text-right tabular-nums">{r.spots === null ? "–" : formatCount(r.spots)}</TableCell>
                     <TableCell className="text-right tabular-nums">{r.shareOfVoice === null ? "–" : `${r.shareOfVoice}%`}</TableCell>
                     <TableCell>
-                      <span className={cn("rounded-full px-2 py-0.5 text-xs", r.source === "manual" ? "bg-violet-100 text-violet-800" : "bg-stone-100 text-stone-700")}>
+                      <span className={cn("rounded-full px-2 py-0.5 text-xs", r.source === "manual" ? "bg-violet-100 text-violet-800" : "bg-gray-100 text-gray-700")}>
                         {r.source === "manual" ? "Manual edit" : "Uploaded"}
                       </span>
                     </TableCell>

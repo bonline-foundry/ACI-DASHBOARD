@@ -13,16 +13,17 @@ import { TEMPLATES, UPLOAD_KINDS } from "@/lib/upload/templates";
 import {
   addRivalAction, createBrandAction, createTvStationAction, createVendorAction, removeRivalAction, setThresholdsAction,
 } from "./actions";
+import { PageSkeleton } from "@/components/data/page-skeleton";
 
 export const metadata: Metadata = { title: "Settings" };
 
-const selectClass = "h-8 rounded-lg border border-stone-300 bg-white px-2 text-sm";
+const selectClass = "h-9 rounded-lg border border-gray-300 bg-white px-2 text-sm";
 
 export default function SettingsPage() {
   return (
     <>
       <PageHeader title="Settings" subtitle="Brands, rivals, vendors, TV stations, alert rules and templates" />
-      <Suspense fallback={<p className="text-sm text-stone-500">Loading settings…</p>}>
+      <Suspense fallback={<PageSkeleton label="Loading settings" />}>
         <SettingsContent />
       </Suspense>
     </>
@@ -52,17 +53,17 @@ async function SettingsContent() {
             {brands.length === 0 ? (
               <EmptyState title="No brands yet" message="Add ACI's brands above. Each brand can track up to 3 rivals." />
             ) : (
-              <ul className="divide-y divide-stone-200">
+              <ul className="divide-y divide-gray-200">
                 {brands.map((b) => (
                   <li key={b.id} className="py-3" data-testid={`brand-${b.name}`}>
-                    <p className="font-medium">{b.name} <span className="text-xs text-stone-500">· {b.businessName}</span></p>
+                    <p className="font-medium">{b.name} <span className="text-xs text-gray-500">· {b.businessName}</span></p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       {b.rivals.map((r) => (
                         <ActionForm key={r.id} action={removeRivalAction} className="inline-flex">
                           <input type="hidden" name="id" value={r.id} />
-                          <span className="rounded-full bg-stone-100 px-3 py-1 text-xs">
+                          <span className="rounded-full bg-gray-100 px-3 py-1 text-xs">
                             {r.name}{" "}
-                            <button type="submit" aria-label={`Remove rival ${r.name}`} className="ml-1 text-stone-500 hover:text-red-700">×</button>
+                            <button type="submit" aria-label={`Remove rival ${r.name}`} className="ml-1 text-gray-500 hover:text-red-700">×</button>
                           </span>
                         </ActionForm>
                       ))}
@@ -113,7 +114,7 @@ async function SettingsContent() {
               </select>
               <Button type="submit">Add vendor</Button>
             </ActionForm>
-            <p className="text-sm text-stone-600">{vendors.length ? vendors.map((v) => v.name).join(", ") : "No vendors yet."}</p>
+            <p className="text-sm text-gray-600">{vendors.length ? vendors.map((v) => v.name).join(", ") : "No vendors yet."}</p>
           </CardContent>
         </Card>
 
@@ -124,7 +125,7 @@ async function SettingsContent() {
               <Input name="name" placeholder="TV station" aria-label="TV station name" className="w-56" required />
               <Button type="submit">Add station</Button>
             </ActionForm>
-            <p className="text-sm text-stone-600">{stations.length ? stations.map((s) => s.name).join(", ") : "No TV stations yet."}</p>
+            <p className="text-sm text-gray-600">{stations.length ? stations.map((s) => s.name).join(", ") : "No TV stations yet."}</p>
           </CardContent>
         </Card>
 
@@ -132,7 +133,7 @@ async function SettingsContent() {
           <CardHeader><CardTitle>Excel templates</CardTitle></CardHeader>
           <CardContent className="flex flex-wrap gap-2">
             {UPLOAD_KINDS.map((k) => (
-              <a key={k} href={`/api/templates/${k}`} download className={buttonVariants({ variant: "outline" })}>
+              <a key={k} href={`/api/templates/${k}`} download className={buttonVariants({ variant: "secondary" })}>
                 {TEMPLATES[k].title}
               </a>
             ))}

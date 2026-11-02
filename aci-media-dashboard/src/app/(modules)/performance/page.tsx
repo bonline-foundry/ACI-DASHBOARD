@@ -18,6 +18,7 @@ import { listChannels } from "@/server/plan";
 import { listPerformance, reachCost, type ReachView } from "@/server/performance";
 import { CHANNEL_GROUPS } from "@/server/spend";
 import { PerformanceResults } from "./performance-results";
+import { PageSkeleton } from "@/components/data/page-skeleton";
 
 export const metadata: Metadata = { title: "Performance" };
 
@@ -33,7 +34,7 @@ export default function PerformancePage({ searchParams }: { searchParams: Search
   return (
     <>
       <PageHeader title="Performance" subtitle="Which channel reaches 1,000 people for the least money" />
-      <Suspense fallback={<p className="text-sm text-stone-500">Loading performance…</p>}>
+      <Suspense fallback={<PageSkeleton label="Loading performance" />}>
         <PerformanceContent searchParams={searchParams} />
       </Suspense>
     </>
@@ -84,12 +85,12 @@ async function PerformanceContent({ searchParams }: { searchParams: Search }) {
           <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
             <div>
               <CardTitle>Cost to reach 1,000 people · {formatMonth(month)}</CardTitle>
-              <p className="text-xs text-stone-500">BDT with VAT. Shorter bar is better.</p>
+              <p className="text-xs text-gray-500">BDT with VAT. Shorter bar is better.</p>
             </div>
-            <nav aria-label="Channels" className="flex gap-1 rounded-lg bg-stone-200/60 p-1">
+            <nav aria-label="Channels" className="flex gap-1 rounded-lg bg-gray-200/60 p-1">
               {VIEW_TABS.map((t) => (
                 <Link key={t.key} href={tabHref(t.key)} aria-current={view === t.key ? "page" : undefined}
-                  className={cn("rounded-md px-3 py-1 text-sm", view === t.key ? "bg-white font-medium shadow-sm" : "text-stone-600")}>
+                  className={cn("rounded-md px-3 py-1 text-sm", view === t.key ? "bg-white font-medium shadow-sm" : "text-gray-600")}>
                   {t.label}
                 </Link>
               ))}
@@ -103,13 +104,13 @@ async function PerformanceContent({ searchParams }: { searchParams: Search }) {
 
         <Card className="lg:col-span-2">
           <CardHeader><CardTitle>What this means</CardTitle></CardHeader>
-          <CardContent className="space-y-2 text-sm text-stone-700">
+          <CardContent className="space-y-2 text-sm text-gray-700">
             {best ? (
               <p data-testid="best-channel"><span className="font-medium">{best.name}</span> reached 1,000 people for {formatTaka(best.costPer1000!)} BDT, the lowest cost this month.</p>
             ) : (
               <p>No channel has both spend and people reached yet for {formatMonth(month)}.</p>
             )}
-            <p className="text-stone-500">Cost per 1,000 reached = spend ÷ people reached × 1,000. Channels without a people reached number show &quot;No data&quot;.</p>
+            <p className="text-gray-500">Cost per 1,000 reached = spend ÷ people reached × 1,000. Channels without a people reached number show &quot;No data&quot;.</p>
           </CardContent>
         </Card>
       </div>
@@ -118,7 +119,7 @@ async function PerformanceContent({ searchParams }: { searchParams: Search }) {
         <CardHeader><CardTitle>TV numbers · {formatMonth(month)}</CardTitle></CardHeader>
         <CardContent>
           {tvRows.length === 0 ? (
-            <p className="text-sm text-stone-500">No TV numbers this month.</p>
+            <p className="text-sm text-gray-500">No TV numbers this month.</p>
           ) : (
             <div className="overflow-x-auto">
               <Table data-testid="tv-numbers">

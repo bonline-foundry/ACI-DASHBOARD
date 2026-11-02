@@ -14,7 +14,7 @@ const LEVEL: Record<BudgetLevel, { label: string; className: string }> = {
   ok: { label: "On track", className: "bg-emerald-100 text-emerald-800" },
   orange: { label: "Near limit", className: "bg-orange-100 text-orange-800" },
   red: { label: "Over budget", className: "bg-red-100 text-red-800" },
-  "no-budget": { label: "No budget set", className: "bg-stone-100 text-stone-600" },
+  "no-budget": { label: "No budget set", className: "bg-gray-100 text-gray-600" },
 };
 
 export function BudgetPanel({ month, rows }: { month: string; rows: BudgetRow[] }) {
@@ -56,15 +56,15 @@ export function BudgetPanel({ month, rows }: { month: string; rows: BudgetRow[] 
             </TableBody>
           </Table>
         </div>
-        <p className="text-xs text-stone-500">
+        <p className="text-xs text-gray-500">
           Planned cost is split across months by campaign days. Actual spend comes from the Spend page. Used % compares actual spend with budget.
         </p>
 
-        <ActionForm action={setBudgetAction} className="flex flex-wrap items-end gap-2 border-t border-stone-200 pt-4">
+        <ActionForm action={setBudgetAction} className="flex flex-wrap items-end gap-2 border-t border-gray-200 pt-4">
           <input type="hidden" name="month" value={month} />
           <label className="flex flex-col gap-1 text-sm">
             Brand
-            <select name="brandId" aria-label="Budget brand" className="h-8 rounded-lg border border-stone-300 bg-white px-2 text-sm" required>
+            <select name="brandId" aria-label="Budget brand" className="h-9 rounded-lg border border-gray-300 bg-white px-2 text-sm" required>
               {rows.map((r) => <option key={r.brandId} value={r.brandId}>{r.brandName}</option>)}
             </select>
           </label>

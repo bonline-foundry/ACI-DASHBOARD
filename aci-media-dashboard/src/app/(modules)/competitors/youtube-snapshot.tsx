@@ -56,7 +56,7 @@ export function YoutubeSnapshot({ brandId, month, rows }: { brandId: number; mon
             </TableBody>
           </Table>
         </div>
-        <p className="mt-2 text-xs text-stone-500">Take the numbers from each channel page once a month.</p>
+        <p className="mt-2 text-xs text-gray-500">Take the numbers from each channel page once a month.</p>
       </CardContent>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -105,7 +105,7 @@ function SnapshotForm({ brandId, month, rows, onDone }: { brandId: number; month
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-stone-500">
+            <tr className="text-left text-gray-500">
               <th className="py-1 font-normal">Channel</th>
               {NUMBERS.map((n) => <th key={n.key} className="py-1 font-normal">{n.label}</th>)}
               <th className="py-1 font-normal">Latest upload</th>
@@ -128,7 +128,7 @@ function SnapshotForm({ brandId, month, rows, onDone }: { brandId: number; month
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-stone-500">Leave a row blank to remove it for this month.</p>
+      <p className="text-xs text-gray-500">Leave a row blank to remove it for this month.</p>
       {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
       <DialogFooter>
         <Button onClick={save} disabled={pending}>{pending ? "Saving…" : "Save snapshot"}</Button>

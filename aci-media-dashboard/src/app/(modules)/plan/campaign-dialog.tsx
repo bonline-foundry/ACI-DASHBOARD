@@ -12,7 +12,7 @@ import { deleteCampaignAction, saveCampaignAction } from "./actions";
 type Option = { id: number; name: string };
 type Line = { channelId: string; amount: string };
 
-const selectClass = "h-8 w-full rounded-lg border border-stone-300 bg-white px-2 text-sm";
+const selectClass = "h-9 w-full rounded-lg border border-gray-300 bg-white px-2 text-sm";
 
 export function CampaignDialog({
   open,
@@ -174,7 +174,7 @@ function CampaignForm({
             onClick={() => setLines((ls) => [...ls, { channelId: String(channels[0]?.id ?? ""), amount: "" }])}>
             Add channel
           </Button>
-          <p className="text-sm text-stone-600">Total: {formatTaka(total)} BDT ({formatMillion(total)}M)</p>
+          <p className="text-sm text-gray-600">Total: {formatTaka(total)} BDT ({formatMillion(total)}M)</p>
         </div>
       </fieldset>
 

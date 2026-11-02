@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { digitalSpendByBusiness, digitalSummary, listDigital, listDigitalPlatforms, type PlatformSummary } from "@/server/digital";
 import { listBrandsWithRivals } from "@/server/master-data";
 import { DigitalEntries } from "./digital-entries";
+import { PageSkeleton } from "@/components/data/page-skeleton";
 
 export const metadata: Metadata = { title: "Digital Data" };
 
@@ -24,7 +25,7 @@ export default function DigitalPage({ searchParams }: { searchParams: Search }) 
   return (
     <>
       <PageHeader title="Digital Data" subtitle="ACI's own Meta, YouTube and TikTok results" />
-      <Suspense fallback={<p className="text-sm text-stone-500">Loading digital data…</p>}>
+      <Suspense fallback={<PageSkeleton label="Loading digital data" />}>
         <DigitalContent searchParams={searchParams} />
       </Suspense>
     </>
@@ -68,7 +69,7 @@ async function DigitalContent({ searchParams }: { searchParams: Search }) {
         <Card>
           <CardHeader>
             <CardTitle>Cost per view by platform</CardTitle>
-            <p className="text-xs text-stone-500">BDT per ThruPlay. Shorter bar is better.</p>
+            <p className="text-xs text-gray-500">BDT per ThruPlay. Shorter bar is better.</p>
           </CardHeader>
           <CardContent>
             <BarList testId="cost-per-view" empty="No platforms." color="bg-amber-500"
@@ -81,7 +82,7 @@ async function DigitalContent({ searchParams }: { searchParams: Search }) {
         <Card>
           <CardHeader>
             <CardTitle>Digital spend by business</CardTitle>
-            <p className="text-xs text-stone-500">From the Spend page · million BDT</p>
+            <p className="text-xs text-gray-500">From the Spend page · million BDT</p>
           </CardHeader>
           <CardContent>
             <BarList testId="digital-by-business" empty={`No digital spend recorded for ${formatMonth(month)}.`} color="bg-rose-600"
@@ -100,7 +101,7 @@ async function DigitalContent({ searchParams }: { searchParams: Search }) {
 
 function PlatformTile({ p }: { p: PlatformSummary }) {
   const stat = (label: string, value: string) => (
-    <div><dt className="text-xs text-stone-500">{label}</dt><dd className="tabular-nums">{value}</dd></div>
+    <div><dt className="text-xs text-gray-500">{label}</dt><dd className="tabular-nums">{value}</dd></div>
   );
   return (
     <Card data-testid={`platform-${p.code}`}>
@@ -109,7 +110,7 @@ function PlatformTile({ p }: { p: PlatformSummary }) {
           <span className={cn("inline-block size-2.5 rounded-full", CHANNEL_COLORS[p.code]?.split(" ")[0])} aria-hidden />
           {p.name}
         </CardTitle>
-        {!p.hasData && <span className="text-xs text-stone-400">No data</span>}
+        {!p.hasData && <span className="text-xs text-gray-400">No data</span>}
       </CardHeader>
       <CardContent>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">

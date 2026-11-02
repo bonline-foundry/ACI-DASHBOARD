@@ -8,7 +8,7 @@ const STATUS_CLASS: Record<BillStatus, string> = {
   cheque_in_counter: "bg-sky-100 text-sky-800",
   finance_audit: "bg-amber-100 text-amber-900",
   bill_error: "bg-red-100 text-red-800",
-  unpaid: "bg-stone-200 text-stone-700",
+  unpaid: "bg-gray-200 text-gray-700",
 };
 
 export function StatusChip({ status }: { status: BillStatus }) {
@@ -16,12 +16,12 @@ export function StatusChip({ status }: { status: BillStatus }) {
 }
 
 const AGE_CLASS: Record<AgeBucket, string> = {
-  fresh: "bg-stone-100 text-stone-700",
+  fresh: "bg-gray-100 text-gray-700",
   yellow: "bg-amber-100 text-amber-900",
   red: "bg-red-100 text-red-800",
 };
 
 export function AgeChip({ days, bucket }: { days: number | null; bucket: AgeBucket | null }) {
-  if (days === null || !bucket) return <span className="text-stone-400">–</span>;
+  if (days === null || !bucket) return <span className="text-gray-400">–</span>;
   return <span className={cn("rounded-full px-2 py-0.5 text-xs whitespace-nowrap tabular-nums", AGE_CLASS[bucket])}>{days} {days === 1 ? "day" : "days"}</span>;
 }

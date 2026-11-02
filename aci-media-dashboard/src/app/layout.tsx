@@ -14,12 +14,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${dmSans.variable} h-full antialiased`}>
-      <body className="min-h-full bg-[#f5f4ef] text-stone-900">
+      <body className="min-h-full bg-background text-foreground">
         <div className="flex min-h-screen flex-col md:flex-row">
-          <aside className="border-b border-stone-200 bg-[#faf9f5] md:w-60 md:shrink-0 md:border-b-0 md:border-r">
+          <aside className="border-b border-sidebar-border bg-sidebar md:sticky md:top-0 md:h-screen md:w-64 md:shrink-0 md:border-b-0 md:border-r">
             <Sidebar />
           </aside>
-          <main className="min-w-0 flex-1 p-4 md:p-8">{children}</main>
+          <main className="min-w-0 flex-1 px-4 py-6 md:px-10 md:py-8">
+            <div className="mx-auto max-w-[1440px]">{children}</div>
+          </main>
         </div>
         <Toaster />
       </body>

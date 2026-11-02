@@ -27,10 +27,10 @@ const FIELDS = [
 ] as const;
 type FieldKey = (typeof FIELDS)[number]["key"];
 
-const selectClass = "h-8 w-full rounded-lg border border-stone-300 bg-white px-2 text-sm";
+const selectClass = "h-9 w-full rounded-lg border border-gray-300 bg-white px-2 text-sm";
 const count = (v: number | null) => (v === null ? "–" : formatCount(v));
 const derived = (v: number | null, isDerived: boolean) =>
-  v === null ? "–" : <span title={isDerived ? "Worked out from spend" : undefined}>{formatRate(v)}{isDerived && <span className="text-stone-400">*</span>}</span>;
+  v === null ? "–" : <span title={isDerived ? "Worked out from spend" : undefined}>{formatRate(v)}{isDerived && <span className="text-gray-400">*</span>}</span>;
 
 export function DigitalEntries({
   month, rows, brands, platforms, brandId,
@@ -85,7 +85,7 @@ export function DigitalEntries({
                     <TableCell className="text-right tabular-nums">{derived(r.costPerView, r.costPerViewDerived)}</TableCell>
                     <TableCell className="text-right tabular-nums">{count(r.engagement)}</TableCell>
                     <TableCell>
-                      <span className={cn("rounded-full px-2 py-0.5 text-xs", r.source === "manual" ? "bg-violet-100 text-violet-800" : "bg-stone-100 text-stone-700")}>
+                      <span className={cn("rounded-full px-2 py-0.5 text-xs", r.source === "manual" ? "bg-violet-100 text-violet-800" : "bg-gray-100 text-gray-700")}>
                         {r.source === "manual" ? "Manual edit" : "Uploaded"}
                       </span>
                     </TableCell>
@@ -99,7 +99,7 @@ export function DigitalEntries({
             </Table>
           </div>
         )}
-        <p className="mt-2 text-xs text-stone-500">* Worked out from spend when left blank. Editing an uploaded row turns it into a manual edit.</p>
+        <p className="mt-2 text-xs text-gray-500">* Worked out from spend when left blank. Editing an uploaded row turns it into a manual edit.</p>
       </CardContent>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -173,7 +173,7 @@ function EntryForm({
           </label>
         ))}
       </div>
-      <p className="text-xs text-stone-500">Leave CPM or cost per view blank to work it out from spend.</p>
+      <p className="text-xs text-gray-500">Leave CPM or cost per view blank to work it out from spend.</p>
       {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
       <DialogFooter>
         <Button onClick={save} disabled={pending}>{pending ? "Saving…" : "Save results"}</Button>

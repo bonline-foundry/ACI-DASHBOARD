@@ -22,7 +22,7 @@ type Option = { id: number; name: string };
 type History = Awaited<ReturnType<typeof billHistoryAction>>;
 type Mode = { kind: "bill"; bill: BillView | null } | { kind: "note"; bill: BillView } | null;
 
-const selectClass = "h-8 w-full rounded-lg border border-stone-300 bg-white px-2 text-sm";
+const selectClass = "h-9 w-full rounded-lg border border-gray-300 bg-white px-2 text-sm";
 
 export function BillsTable({ rows, vendors, brands, month, filtered }: { rows: BillView[]; vendors: Option[]; brands: Option[]; month: string; filtered: boolean }) {
   const [mode, setMode] = useState<Mode>(null);
@@ -48,8 +48,8 @@ export function BillsTable({ rows, vendors, brands, month, filtered }: { rows: B
             <Table data-testid="bills-table">
               <TableHeader>
                 <TableRow>
-                  <TableHead>Bill no</TableHead><TableHead>Vendor</TableHead><TableHead>Brand</TableHead><TableHead>Bill date</TableHead>
-                  <TableHead className="text-right">Amount (BDT)</TableHead><TableHead>Status</TableHead><TableHead>Age</TableHead><TableHead />
+                  <TableHead>Bill no</TableHead><TableHead>Vendor · brand</TableHead>
+                  <TableHead className="text-right">Amount (BDT)</TableHead><TableHead>Status</TableHead><TableHead>Age · bill date</TableHead><TableHead />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -58,20 +58,24 @@ export function BillsTable({ rows, vendors, brands, month, filtered }: { rows: B
                   return (
                     <TableRow key={r.id} data-testid={`bill-${r.billNo}`}>
                       <TableCell>
-                        <button type="button" className="font-medium text-teal-800 underline-offset-2 hover:underline" onClick={() => setMode({ kind: "bill", bill: r })}>{r.billNo}</button>
-                        {r.note && <p className="max-w-56 truncate text-xs text-stone-500" title={r.note}>{r.note}</p>}
+                        <button type="button" className="font-medium text-primary underline-offset-2 hover:underline" onClick={() => setMode({ kind: "bill", bill: r })}>{r.billNo}</button>
+                        {r.note && <p className="max-w-56 truncate text-xs text-gray-500" title={r.note}>{r.note}</p>}
                       </TableCell>
-                      <TableCell>{r.vendorName ?? "–"}</TableCell>
-                      <TableCell>{r.brandName ?? "–"}</TableCell>
-                      <TableCell className="whitespace-nowrap">{r.billDate}</TableCell>
+                      <TableCell>
+                        <p>{r.vendorName ?? "No vendor"}</p>
+                        <p className="text-xs text-gray-500">{r.brandName ?? "No brand"}</p>
+                      </TableCell>
                       <TableCell className="text-right tabular-nums">{formatTaka(r.amount)}</TableCell>
                       <TableCell>
                         <StatusChip status={r.status} />
                         {r.openReminderId && <span className="ml-1 rounded-full bg-violet-100 px-2 py-0.5 text-xs text-violet-800">Reminder on</span>}
                       </TableCell>
-                      <TableCell>{paid ? <span className="text-xs text-stone-500">Paid {r.paidAt}</span> : <AgeChip days={r.ageDays} bucket={r.bucket} />}</TableCell>
-                      <TableCell className="space-x-1 text-right whitespace-nowrap">
-                        {!paid && <Button size="sm" variant="outline" disabled={pending} onClick={() => act(() => markPaidAction(r.id), `${r.billNo} marked paid`)}>Mark paid</Button>}
+                      <TableCell>
+                        {paid ? <span className="text-xs text-gray-500">Paid {r.paidAt}</span> : <AgeChip days={r.ageDays} bucket={r.bucket} />}
+                        <p className="mt-1 text-xs text-gray-500">Billed {r.billDate}</p>
+                      </TableCell>
+                      <TableCell className="space-x-0.5 text-right whitespace-nowrap">
+                        {!paid && <Button size="sm" variant="secondary" disabled={pending} onClick={() => act(() => markPaidAction(r.id), `${r.billNo} marked paid`)}>Mark paid</Button>}
                         {!paid && !r.openReminderId && <Button size="sm" variant="ghost" disabled={pending} onClick={() => act(() => remindAction(r.id), "Reminder added to Home")}>Remind</Button>}
                         <Button size="sm" variant="ghost" onClick={() => setMode({ kind: "note", bill: r })}>Note</Button>
                       </TableCell>
@@ -186,19 +190,19 @@ function BillForm({ bill, vendors, brands, month, onDone }: { bill: BillView | n
         <label className="flex flex-col gap-1 sm:col-span-3">Note<Textarea aria-label="Bill form note" value={f.note} onChange={set("note")} /></label>
       </div>
       {bill && (
-        <div className="rounded-lg border border-stone-200 p-3 text-sm">
+        <div className="rounded-lg border border-gray-200 p-3 text-sm">
           <p className="mb-1 font-medium">History</p>
-          {history === null ? <p className="text-stone-500">Loading…</p> : history.length === 0 ? <p className="text-stone-500">No changes yet.</p> : (
+          {history === null ? <p className="text-gray-500">Loading…</p> : history.length === 0 ? <p className="text-gray-500">No changes yet.</p> : (
             <ul className="max-h-36 space-y-1 overflow-y-auto" data-testid="bill-history">
               {history.map((h) => (
-                <li key={h.id} className="flex justify-between gap-2 text-stone-600">
+                <li key={h.id} className="flex justify-between gap-2 text-gray-600">
                   <span>{h.reason ?? (h.action === "create" ? "Added" : h.action === "upload" ? "Uploaded" : "Edited")}{h.after?.status ? ` · ${BILL_STATUS_LABELS[h.after.status as keyof typeof BILL_STATUS_LABELS] ?? h.after.status}` : ""}</span>
-                  <span className="text-xs text-stone-400">{new Date(h.at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+                  <span className="text-xs text-gray-400">{new Date(h.at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
                 </li>
               ))}
             </ul>
           )}
-          <p className="mt-2 text-xs text-stone-500">Month {formatMonth(bill.month)} · {bill.source === "manual" ? "Manual edit" : "Uploaded"}</p>
+          <p className="mt-2 text-xs text-gray-500">Month {formatMonth(bill.month)} · {bill.source === "manual" ? "Manual edit" : "Uploaded"}</p>
         </div>
       )}
       {error && <p role="alert" className="text-sm text-red-700">{error}</p>}

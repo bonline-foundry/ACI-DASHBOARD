@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { getDb } from "@/db/client";
@@ -13,6 +14,7 @@ import { listCampaigns, listChannels, planVsBudget } from "@/server/plan";
 import { PlanBoard, type PlanView } from "./plan-board";
 import { BudgetPanel } from "./budget-panel";
 import { UploadPanel } from "@/components/data/upload-panel";
+import { PageSkeleton } from "@/components/data/page-skeleton";
 
 export const metadata: Metadata = { title: "Plan" };
 
@@ -28,7 +30,7 @@ export default function PlanPage({ searchParams }: { searchParams: Search }) {
   return (
     <>
       <PageHeader title="Plan" subtitle="Campaigns by date, with budget against plan and actual spend" />
-      <Suspense fallback={<p className="text-sm text-stone-500">Loading plan…</p>}>
+      <Suspense fallback={<PageSkeleton label="Loading plan" />}>
         <PlanContent searchParams={searchParams} />
       </Suspense>
     </>
@@ -63,14 +65,14 @@ async function PlanContent({ searchParams }: { searchParams: Search }) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Link href={href({ month: addMonths(month, -1) })} className={buttonVariants({ variant: "outline", size: "sm" })} aria-label="Previous month">‹</Link>
+          <Link href={href({ month: addMonths(month, -1) })} className={buttonVariants({ variant: "secondary", size: "icon" })} aria-label="Previous month"><ChevronLeft aria-hidden /></Link>
           <h2 className="min-w-36 text-center text-lg font-semibold">{formatMonth(month)}</h2>
-          <Link href={href({ month: addMonths(month, 1) })} className={buttonVariants({ variant: "outline", size: "sm" })} aria-label="Next month">›</Link>
+          <Link href={href({ month: addMonths(month, 1) })} className={buttonVariants({ variant: "secondary", size: "icon" })} aria-label="Next month"><ChevronRight aria-hidden /></Link>
         </div>
-        <nav aria-label="Plan views" className="flex gap-1 rounded-lg bg-stone-200/60 p-1">
+        <nav aria-label="Plan views" className="flex gap-1 rounded-lg bg-gray-200/60 p-1">
           {VIEWS.map((v) => (
             <Link key={v.key} href={href({ view: v.key })} aria-current={view === v.key ? "page" : undefined}
-              className={cn("rounded-md px-3 py-1 text-sm", view === v.key ? "bg-white font-medium shadow-sm" : "text-stone-600")}>
+              className={cn("rounded-md px-3 py-1 text-sm", view === v.key ? "bg-white font-medium shadow-sm" : "text-gray-600")}>
               {v.label}
             </Link>
           ))}

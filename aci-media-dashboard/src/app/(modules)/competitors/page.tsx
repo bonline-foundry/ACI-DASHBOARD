@@ -22,6 +22,7 @@ import { AdLog } from "./ad-log";
 import { MediaEntries } from "./media-entries";
 import { SourcesTable } from "./sources-table";
 import { YoutubeSnapshot } from "./youtube-snapshot";
+import { PageSkeleton } from "@/components/data/page-skeleton";
 
 export const metadata: Metadata = { title: "Competitor Tracking" };
 
@@ -31,7 +32,7 @@ export default function CompetitorsPage({ searchParams }: { searchParams: Search
   return (
     <>
       <PageHeader title="Competitor Tracking" subtitle="Each brand against its 3 rivals" />
-      <Suspense fallback={<p className="text-sm text-stone-500">Loading competitors…</p>}>
+      <Suspense fallback={<PageSkeleton label="Loading competitors" />}>
         <CompetitorsContent searchParams={searchParams} />
       </Suspense>
     </>
@@ -48,7 +49,7 @@ async function CompetitorsContent({ searchParams }: { searchParams: Search }) {
   if (active.length === 0) {
     return (
       <EmptyState title="No brands yet" message="Add a brand and its rivals in Settings first.">
-        <Link href="/settings" className={buttonVariants({ variant: "outline" })}>Open Settings</Link>
+        <Link href="/settings" className={buttonVariants({ variant: "secondary" })}>Open Settings</Link>
       </EmptyState>
     );
   }
@@ -68,10 +69,10 @@ async function CompetitorsContent({ searchParams }: { searchParams: Search }) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <FilterBar month={month} brands={active.map((b) => ({ id: b.id, name: b.name }))} brandId={brand.id} allowAll={false} />
-        <p className="text-sm text-stone-600" data-testid="rivals-line">
-          <span className="font-medium text-stone-900">{brand.name}</span>
+        <p className="text-sm text-gray-600" data-testid="rivals-line">
+          <span className="font-medium text-gray-900">{brand.name}</span>
           {brand.rivals.length ? ` vs ${brand.rivals.map((r) => r.name).join(", ")}` : " has no rivals yet"}
-          {brand.rivals.length < 3 && <> · <Link href="/settings" className="text-teal-700 underline">Add rivals in Settings</Link></>}
+          {brand.rivals.length < 3 && <> · <Link href="/settings" className="text-primary underline">Add rivals in Settings</Link></>}
         </p>
       </div>
 
@@ -79,23 +80,23 @@ async function CompetitorsContent({ searchParams }: { searchParams: Search }) {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Share of voice · {formatMonth(month)}</CardTitle>
-            <p className="text-xs text-stone-500">Share of TV, Press and Radio spend between {brand.name} and its rivals.</p>
+            <p className="text-xs text-gray-500">Share of TV, Press and Radio spend between {brand.name} and its rivals.</p>
           </CardHeader>
           <CardContent>
             {anySpend ? (
-              <BarList testId="share-of-voice" empty="No data." color="bg-teal-600"
+              <BarList testId="share-of-voice" empty="No data." color="bg-primary"
                 rows={overview.map((s) => ({
                   key: s.key, label: s.name, value: s.shareOfVoice, display: s.shareOfVoice === null ? "" : `${s.shareOfVoice.toFixed(1)}%`,
                   note: s.isOwn ? "Our brand" : undefined, highlight: s.isOwn,
                 }))} />
             ) : (
-              <p className="text-sm text-stone-500">No spend recorded for {formatMonth(month)} yet.</p>
+              <p className="text-sm text-gray-500">No spend recorded for {formatMonth(month)} yet.</p>
             )}
           </CardContent>
         </Card>
 
         <Card className="lg:col-span-3">
-          <CardHeader><CardTitle>Spend and spots by media</CardTitle><p className="text-xs text-stone-500">Spend in million BDT · spots or insertions</p></CardHeader>
+          <CardHeader><CardTitle>Spend and spots by media</CardTitle><p className="text-xs text-gray-500">Spend in million BDT · spots or insertions</p></CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <Table data-testid="media-by-subject">
@@ -113,12 +114,12 @@ async function CompetitorsContent({ searchParams }: { searchParams: Search }) {
                       {MEDIA_TYPES.map((m) => (
                         <TableCell key={m} className="text-right tabular-nums">
                           {s.byMedia[m].spend || s.byMedia[m].spots
-                            ? <>{formatMillion(s.byMedia[m].spend)}<span className="text-stone-400"> · {formatCount(s.byMedia[m].spots)}</span></>
+                            ? <>{formatMillion(s.byMedia[m].spend)}<span className="text-gray-400"> · {formatCount(s.byMedia[m].spots)}</span></>
                             : "–"}
                         </TableCell>
                       ))}
                       <TableCell className="text-right font-medium tabular-nums">
-                        {s.spend || s.spots ? <>{formatMillion(s.spend)}<span className="text-stone-400"> · {formatCount(s.spots)}</span></> : "–"}
+                        {s.spend || s.spots ? <>{formatMillion(s.spend)}<span className="text-gray-400"> · {formatCount(s.spots)}</span></> : "–"}
                       </TableCell>
                     </TableRow>
                   ))}

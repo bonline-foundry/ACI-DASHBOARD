@@ -13,7 +13,7 @@ export function SourceTag({
     ? new Date(updatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
     : "never";
   return (
-    <p className="text-xs text-stone-500">
+    <p className="text-xs text-gray-500">
       {label ? `${label} · ` : "Source: "}
       {source ? LABEL[source] : "No data yet"} · Updated {when}
     </p>

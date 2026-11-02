@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { FileSpreadsheet, Upload } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -24,6 +25,8 @@ export function UploadPanel({ kind }: { kind: UploadKind }) {
   const [accept, setAccept] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  // Closed until needed, so each page shows one "Upload Excel" choice instead of a large drop area (Hick's law).
+  const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const formFor = (f: File) => {
@@ -52,6 +55,7 @@ export function UploadPanel({ kind }: { kind: UploadKind }) {
     setAccept(false);
     setError(null);
     if (inputRef.current) inputRef.current.value = "";
+    setOpen(false);
   }
 
   function confirm() {
@@ -70,29 +74,43 @@ export function UploadPanel({ kind }: { kind: UploadKind }) {
   const mismatch = preview?.totals.status === "mismatch";
   const canConfirm = Boolean(preview?.ok) && (!mismatch || accept) && !pending;
 
+  const expanded = open || Boolean(file);
+
   return (
     <Card data-testid={`upload-${kind}`}>
-      <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <CardTitle>Upload {def.title.charAt(0).toLowerCase() + def.title.slice(1)} (Excel)</CardTitle>
-        <a href={`/api/templates/${kind}`} download className={buttonVariants({ variant: "outline", size: "sm" })}>Download template</a>
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="grid size-9 place-items-center rounded-lg bg-accent text-primary" aria-hidden><FileSpreadsheet className="size-[18px]" /></span>
+          <div>
+            <CardTitle>Upload {def.title.charAt(0).toLowerCase() + def.title.slice(1)} (Excel)</CardTitle>
+            <p className="text-xs text-gray-500">Add many rows at once from the template. Every file is checked before it is saved.</p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <a href={`/api/templates/${kind}`} download className={buttonVariants({ variant: "ghost", size: "sm" })}>Download template</a>
+          <Button size="sm" variant="secondary" aria-expanded={expanded} onClick={() => (expanded ? reset() : setOpen(true))}>
+            {expanded ? "Close" : <><Upload aria-hidden />Upload Excel</>}
+          </Button>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4" hidden={!expanded}>
         <label
           onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
           onDragLeave={() => setDragging(false)}
           onDrop={(e) => { e.preventDefault(); setDragging(false); choose(e.dataTransfer.files[0]); }}
           className={cn(
-            "flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 border-dashed px-4 py-6 text-center text-sm",
-            dragging ? "border-stone-900 bg-stone-100" : "border-stone-300 bg-stone-50",
+            "flex cursor-pointer flex-col items-center gap-1 rounded-xl border-2 border-dashed px-4 py-8 text-center text-sm transition-colors",
+            dragging ? "border-primary bg-accent" : "border-gray-300 bg-gray-50 hover:border-primary/60 hover:bg-accent/50",
           )}
         >
+          <Upload className="mb-1 size-5 text-gray-400" aria-hidden />
           <span className="font-medium">{file ? file.name : "Drop an Excel file here, or click to choose"}</span>
-          <span className="text-xs text-stone-500">.xlsx, .xls or .csv · up to 4 MB · use the template columns · optional TOTAL row to check sums</span>
+          <span className="text-xs text-gray-500">.xlsx, .xls or .csv · up to 4 MB · use the template columns · optional TOTAL row to check sums</span>
           <input ref={inputRef} type="file" accept=".xlsx,.xls,.csv" aria-label={`Choose ${def.title} file`} className="sr-only"
             onChange={(e) => choose(e.target.files?.[0])} />
         </label>
 
-        {pending && !preview && <p className="text-sm text-stone-500">Checking the file…</p>}
+        {pending && !preview && <p className="text-sm text-gray-500">Checking the file…</p>}
         {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
 
         {preview && (
@@ -104,7 +122,7 @@ export function UploadPanel({ kind }: { kind: UploadKind }) {
                   <li key={c.label} className="flex flex-wrap items-center gap-2 text-sm">
                     <span className={cn("w-16 rounded-full px-2 py-0.5 text-center text-xs", CHIP[c.status].className)}>{CHIP[c.status].label}</span>
                     <span className="font-medium">{c.label}</span>
-                    {c.detail && <span className="text-stone-500">{c.detail}</span>}
+                    {c.detail && <span className="text-gray-500">{c.detail}</span>}
                   </li>
                 ))}
               </ul>
@@ -125,7 +143,7 @@ export function UploadPanel({ kind }: { kind: UploadKind }) {
 
             {preview.sample.length > 0 && (
               <details>
-                <summary className="cursor-pointer text-sm text-stone-600">Preview first {Math.min(5, preview.sample.length)} of {preview.rowCount} rows</summary>
+                <summary className="cursor-pointer text-sm text-gray-600">Preview first {Math.min(5, preview.sample.length)} of {preview.rowCount} rows</summary>
                 <div className="mt-2 overflow-x-auto">
                   <Table>
                     <TableHeader><TableRow>{def.columns.map((c) => <TableHead key={c.key}>{c.header}</TableHead>)}</TableRow></TableHeader>

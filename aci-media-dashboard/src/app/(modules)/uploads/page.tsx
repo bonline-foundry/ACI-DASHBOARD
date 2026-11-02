@@ -13,6 +13,7 @@ import { TEMPLATES } from "@/lib/upload/templates";
 import { cn } from "@/lib/utils";
 import { listHistory, listUploads } from "@/server/uploads";
 import { RestoreButton } from "./restore-button";
+import { PageSkeleton } from "@/components/data/page-skeleton";
 
 export const metadata: Metadata = { title: "Uploads & History" };
 
@@ -25,8 +26,8 @@ const ENTITIES = [
 
 const STATUS = {
   confirmed: { label: "Current", className: "bg-emerald-100 text-emerald-800" },
-  superseded: { label: "Older version", className: "bg-stone-100 text-stone-600" },
-  rolled_back: { label: "Rolled back", className: "bg-stone-100 text-stone-600" },
+  superseded: { label: "Older version", className: "bg-gray-100 text-gray-600" },
+  rolled_back: { label: "Rolled back", className: "bg-gray-100 text-gray-600" },
 };
 
 const when = (s: string) => new Date(s).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Dhaka" });
@@ -35,7 +36,7 @@ export default function UploadsPage({ searchParams }: { searchParams: Search }) 
   return (
     <>
       <PageHeader title="Uploads & History" subtitle="Every upload is saved as a version. Every change is logged." />
-      <Suspense fallback={<p className="text-sm text-stone-500">Loading…</p>}>
+      <Suspense fallback={<PageSkeleton label="Loading" />}>
         <UploadsContent searchParams={searchParams} />
       </Suspense>
     </>
@@ -108,7 +109,7 @@ async function UploadsContent({ searchParams }: { searchParams: Search }) {
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
           <CardTitle>History log</CardTitle>
           <form method="get" className="flex items-center gap-2">
-            <select name="entity" defaultValue={entity} aria-label="Show changes to" className="h-8 rounded-lg border border-stone-300 bg-white px-2 text-sm">
+            <select name="entity" defaultValue={entity} aria-label="Show changes to" className="h-9 rounded-lg border border-gray-300 bg-white px-2 text-sm">
               {ENTITIES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
             </select>
             <Button type="submit" size="sm" variant="outline">Filter</Button>
@@ -116,7 +117,7 @@ async function UploadsContent({ searchParams }: { searchParams: Search }) {
         </CardHeader>
         <CardContent>
           {history.length === 0 ? (
-            <p className="text-sm text-stone-500">No changes yet.</p>
+            <p className="text-sm text-gray-500">No changes yet.</p>
           ) : (
             <div className="overflow-x-auto">
               <Table data-testid="history-table">
@@ -138,7 +139,7 @@ async function UploadsContent({ searchParams }: { searchParams: Search }) {
               </Table>
             </div>
           )}
-          <p className="mt-2 text-xs text-stone-500">Showing the latest 200 changes.</p>
+          <p className="mt-2 text-xs text-gray-500">Showing the latest 200 changes.</p>
         </CardContent>
       </Card>
     </div>

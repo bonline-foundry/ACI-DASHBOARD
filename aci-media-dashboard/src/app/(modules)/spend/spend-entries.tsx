@@ -31,7 +31,7 @@ export type SpendRow = {
   source: "upload" | "manual";
 };
 
-const selectClass = "h-8 w-full rounded-lg border border-stone-300 bg-white px-2 text-sm";
+const selectClass = "h-9 w-full rounded-lg border border-gray-300 bg-white px-2 text-sm";
 
 export function SpendEntries({
   month, rows, brands, channels, stations, vendors, brandId,
@@ -80,7 +80,7 @@ export function SpendEntries({
                     <TableCell>{r.entryDate ?? "–"}</TableCell>
                     <TableCell className="text-right tabular-nums">{formatTaka(r.amount)}</TableCell>
                     <TableCell>
-                      <span className={cn("rounded-full px-2 py-0.5 text-xs", r.source === "manual" ? "bg-violet-100 text-violet-800" : "bg-stone-100 text-stone-700")}>
+                      <span className={cn("rounded-full px-2 py-0.5 text-xs", r.source === "manual" ? "bg-violet-100 text-violet-800" : "bg-gray-100 text-gray-700")}>
                         {r.source === "manual" ? "Manual edit" : "Uploaded"}
                       </span>
                     </TableCell>
@@ -94,7 +94,7 @@ export function SpendEntries({
             </Table>
           </div>
         )}
-        <p className="mt-2 text-xs text-stone-500">Editing an uploaded row turns it into a manual edit. Manual edits are kept when the month is uploaded again.</p>
+        <p className="mt-2 text-xs text-gray-500">Editing an uploaded row turns it into a manual edit. Manual edits are kept when the month is uploaded again.</p>
       </CardContent>
 
       <Dialog open={open} onOpenChange={setOpen}>

@@ -14,7 +14,7 @@ export function SourcesTable({ rows, staleDays }: { rows: SourceRow[]; staleDays
     <Card>
       <CardHeader>
         <CardTitle>Sources</CardTitle>
-        <p className="text-xs text-stone-500">Who keeps each source up to date. A source turns stale after {staleDays} days without an update.</p>
+        <p className="text-xs text-gray-500">Who keeps each source up to date. A source turns stale after {staleDays} days without an update.</p>
       </CardHeader>
       <CardContent>
         <Table data-testid="sources-table">
